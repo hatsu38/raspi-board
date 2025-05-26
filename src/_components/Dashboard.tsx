@@ -15,7 +15,7 @@ export function Dashboard({ dates }: DashboardProps) {
 
   return (
     <div className="w-full space-y-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4">
           <Clock />
         </div>
@@ -24,7 +24,7 @@ export function Dashboard({ dates }: DashboardProps) {
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">今日の服装指数</h3>
               <div className="flex flex-col items-center space-y-2">
-                <div className="relative w-24 h-24">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24">
                   <Image
                     src={clothingIndex.image}
                     alt={clothingIndex.description}
@@ -32,7 +32,7 @@ export function Dashboard({ dates }: DashboardProps) {
                     fill
                   />
                 </div>
-                <p className="text-gray-300 text-sm">{clothingIndex.description}</p>
+                <p className="text-white text-sm">{clothingIndex.description}</p>
               </div>
             </div>
           </div>
