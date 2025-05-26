@@ -27,7 +27,7 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
           : 'p-2'
       }`}
     >
-      <p className={`text-xs text-gray-500 mb-2 ${isToday ? 'font-bold' : ''}`}>
+      <p className={`text-xs text-white mb-2 ${isToday ? 'font-bold' : ''}`}>
         {date.format('MM/DD')}({date.format('ddd')})
       </p>
       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-2">
@@ -46,10 +46,10 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] sm:text-xs font-medium text-gray-200 leading-tight">
+                <span className="text-[10px] sm:text-xs font-medium text-white leading-tight">
                   {type.name}
                 </span>
-                <span className="text-[8px] sm:text-[10px] text-gray-400 leading-tight">
+                <span className="text-[8px] sm:text-[10px] text-white/70 leading-tight">
                   {type.days.join('・')}曜日
                   {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
                 </span>
@@ -58,7 +58,7 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
           ))
         ) : (
           <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
-            <span className="text-[10px] sm:text-xs text-gray-400">ゴミ出しなし</span>
+            <span className="text-[10px] sm:text-xs text-white/70">ゴミ出しなし</span>
           </div>
         )}
       </div>
@@ -74,10 +74,10 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
           </div>
         )}
       </div>
-      <h3 className={`font-semibold mb-1 ${isToday ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
+      <h3 className={`font-semibold mb-1 text-white ${isToday ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
         {forecast.telop}
       </h3>
-      <div className={`font-bold mb-2 ${isToday ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+      <div className={`font-bold mb-2 text-white ${isToday ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
         <p className="mb-0.5">
           <span className="text-red-500">最高</span>
           {forecast.temperature.max?.celsius || '--'}°C
@@ -91,7 +91,7 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
         {Object.entries(forecast.chanceOfRain)
           .filter(([, value]) => value !== '--%')
           .map(([time, value]) => (
-            <p key={time} className="text-gray-400">
+            <p key={time} className="text-white/70">
               {time.replace('T', '').replace('_', '-')}: {value as string}
             </p>
           ))}

@@ -22,7 +22,7 @@ export function Dashboard({ dates }: DashboardProps) {
         {clothingIndex && (
           <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">今日の服装指数</h3>
+              <h3 className="text-lg font-semibold mb-2 text-white">今日の服装指数</h3>
               <div className="flex flex-col items-center space-y-2">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24">
                   <Image
