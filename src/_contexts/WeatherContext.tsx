@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useTime } from "./TimeContext";
-
-
+import { calculateClothingScore } from "../_utils/clothingScore";
+import { Forecast } from "../types/weather";
 
 type WeatherData = {
   publicTime: string;
@@ -18,38 +18,7 @@ type WeatherData = {
     bodyText: string;
     text: string;
   };
-  forecasts: Array<{
-    date: string;
-    dateLabel: string;
-    telop: string;
-    detail: {
-      weather: string;
-      wind: string;
-      wave: string;
-    };
-    temperature: {
-      min: {
-        celsius: string | null;
-        fahrenheit: string | null;
-      };
-      max: {
-        celsius: string | null;
-        fahrenheit: string | null;
-      };
-    };
-    chanceOfRain: {
-      T00_06: string;
-      T06_12: string;
-      T12_18: string;
-      T18_24: string;
-    };
-    image: {
-      title: string;
-      url: string;
-      width: number;
-      height: number;
-    };
-  }>;
+  forecasts: Forecast[];
   location: {
     area: string;
     prefecture: string;
@@ -74,40 +43,11 @@ type WeatherData = {
   };
 };
 
-type Forecast = WeatherData['forecasts'][0];
-
 type ClothingIndex = {
   index: number;
   description: string;
   image: string;
 };
-
-const parseWaveHeight = (wave: string): number => {
-  const match = wave.match(/(\d+)/);
-  return match ? parseInt(match[1]) : 0;
-};
-
-const waveToWindPenalty = (wave: number): number => {
-  if (wave >= 3) return -5;
-  if (wave >= 2) return -3;
-  if (wave >= 1) return -1;
-  return 0;
-};
-
-const temperatureToScore = (avgTemp: number): number => {
-  if (avgTemp <= 0) return 5;
-  if (avgTemp <= 5) return 10;
-  if (avgTemp <= 10) return 20;
-  if (avgTemp <= 15) return 30;
-  if (avgTemp <= 20) return 40;
-  if (avgTemp <= 23) return 50;
-  if (avgTemp <= 26) return 60;
-  if (avgTemp <= 29) return 70;
-  if (avgTemp <= 32) return 80;
-  if (avgTemp <= 35) return 90;
-  return 100;
-};
-
 
 const getClothingDescription = (score: number): {
   text: string;
@@ -155,63 +95,12 @@ const getClothingDescription = (score: number): {
   };
 };
 
-const getDefaultTemperatureByMonth = (month: number): { max: number; min: number } => {
-  switch (month) {
-    case 1: return { max: 7, min: 1 };   // January
-    case 2: return { max: 8, min: 1 };   // February
-    case 3: return { max: 13, min: 5 };  // March
-    case 4: return { max: 18, min: 10 }; // April
-    case 5: return { max: 23, min: 15 }; // May
-    case 6: return { max: 26, min: 18 }; // June
-    case 7: return { max: 30, min: 23 }; // July
-    case 8: return { max: 32, min: 24 }; // August
-    case 9: return { max: 28, min: 21 }; // September
-    case 10: return { max: 22, min: 15 }; // October
-    case 11: return { max: 16, min: 9 }; // November
-    case 12: return { max: 11, min: 4 }; // December
-    default: return { max: 20, min: 10 }; // fallback
-  }
-};
-
-
 function calculateClothingIndex(forecast: Forecast): ClothingIndex {
-  const dateObj = new Date(forecast.date);
-  const month = dateObj.getMonth() + 1;
-
-  const defaultTemp = getDefaultTemperatureByMonth(month);
-  
-  const maxTemp = Number(forecast.temperature.max?.celsius ?? defaultTemp.max);
-  const minTemp = Number(forecast.temperature.min?.celsius ?? defaultTemp.min);
-  const avgTemp = (maxTemp + minTemp) / 2;
-
-  let score = temperatureToScore(avgTemp);
-
-  const weather = forecast.telop;
-  const wave = parseWaveHeight(forecast.detail.wave);
-  const windPenalty = waveToWindPenalty(wave);
-
-  const wind = forecast.detail.wind;
-  const chanceOfRain = Object.values(forecast.chanceOfRain).map(r => parseInt(r) || 0);
-  const rainAvg = chanceOfRain.length ? (chanceOfRain.reduce((a, b) => a + b) / chanceOfRain.length) : 0;
-
-  // スコア補正
-  if (weather.includes('雨')) score -= 5;
-  else if (weather.includes('曇')) score -= 2;
-  else if (weather.includes('晴')) score += 2;
-
-  if (wind.includes('北') || wind.includes('北東')) score -= 2;
-  if (wind.includes('強い')) score -= 3;
-
-  score += windPenalty;
-
-  if (rainAvg >= 50) score -= 3;
-  else if (rainAvg >= 30) score -= 1;
-
-  const finalScore = Math.max(0, Math.min(100, score));
+  const score = calculateClothingScore(forecast);
   return {
-    index: finalScore,
-    description: getClothingDescription(finalScore).text,
-    image: getClothingDescription(finalScore).image
+    index: score,
+    description: getClothingDescription(score).text,
+    image: getClothingDescription(score).image
   };
 }
 
