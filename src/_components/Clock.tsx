@@ -8,7 +8,7 @@ export function Clock() {
   return (
     <div className="font-light font-robot">
       <p className="text-2xl text-thinGray">{time.format("YYYY/MM/DD")}({time.format("dd")})</p>
-      <h2 className="text-8xl tracking-tight">
+      <h2 className="text-6xl tracking-tight">
         {time.format("HH:mm:ss")}
       </h2>
     </div>
