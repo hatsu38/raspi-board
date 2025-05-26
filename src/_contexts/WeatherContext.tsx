@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useTime } from "./TimeContext";
 
+
+
 type WeatherData = {
   publicTime: string;
   publicTimeFormatted: string;
@@ -72,10 +74,109 @@ type WeatherData = {
   };
 };
 
+type Forecast = WeatherData['forecasts'][0];
+
+type ClothingIndex = {
+  index: number;
+  description: string;
+  image: string;
+};
+
+const parseWaveHeight = (wave: string): number => {
+  const match = wave.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+};
+
+const waveToWindPenalty = (wave: number): number => {
+  if (wave >= 3) return -5;
+  if (wave >= 2) return -3;
+  if (wave >= 1) return -1;
+  return 0;
+};
+
+const getClothingDescription = (score: number): {
+  text: string;
+  image: string;
+} => {
+  if (score <= 10) return {
+    text: 'ぶるぶる、何を着ても寒い！',
+    image: '/clothes/10_ぶるぶる、何を着ても寒い！.png'
+  };
+  if (score <= 20) return {
+    text: 'ダウンジャケットでしっかり防寒',
+    image: '/clothes/20_ダウンジャケットでしっかり防寒.png'
+  };
+  if (score <= 30) return {
+    text: 'コートを着ないと結構寒いなあ',
+    image: '/clothes/30_コートを着ないと結構寒いなあ.png'
+  };
+  if (score <= 40) return {
+    text: '裏地付トレンチコートがおすすめ',
+    image: '/clothes/40_裏地付トレンチコートがおすすめ.png'
+  };
+  if (score <= 50) return {
+    text: '薄手のジャケットを羽織ろう',
+    image: '/clothes/50_薄手のジャケットを羽織ろう.png'
+  };
+  if (score <= 60) return {
+    text: '長袖シャツ・カットソーで快適に',
+    image: '/clothes/60_長袖シャツ・カットソーで快適に.png'
+  };
+  if (score <= 70) return {
+    text: '半袖＋カーディガンで温度調節を',
+    image: '/clothes/70_半袖＋カーディガンで温度調節を.png'
+  };
+  if (score <= 80) return {
+    text: '半袖Tシャツ一枚で過ごせる暑さ',
+    image: '/clothes/80_半袖Tシャツ一枚で過ごせる暑さ.png'
+  };
+  if (score <= 90) return {
+    text: 'ノースリーブでもかなり暑い！',
+    image: '/clothes/90_ノースリーブでもかなり暑い！.png'
+  };
+  return {
+    text: '暑さ対策必須！何を着ても暑い！',
+    image: '/clothes/100_暑さ対策必須！何を着ても暑い！.png'
+  };
+};
+
+function calculateClothingIndex(forecast: Forecast): ClothingIndex {
+  const maxTemp = Number(forecast.temperature.max?.celsius ?? 20);
+  const weather = forecast.telop;
+  const wave = parseWaveHeight(forecast.detail.wave);
+  const windPenalty = waveToWindPenalty(wave);
+
+  const wind = forecast.detail.wind;
+  const chanceOfRain = Object.values(forecast.chanceOfRain).map(r => parseInt(r) || 0);
+  const rainAvg = chanceOfRain.length ? (chanceOfRain.reduce((a, b) => a + b) / chanceOfRain.length) : 0;
+
+  let score = maxTemp;
+
+  if (weather.includes('雨')) score -= 5;
+  else if (weather.includes('曇')) score -= 2;
+  else if (weather.includes('晴')) score += 2;
+
+  if (wind.includes('北') || wind.includes('北東')) score -= 2;
+  if (wind.includes('強い')) score -= 3;
+
+  score += windPenalty;
+
+  if (rainAvg >= 50) score -= 3;
+  else if (rainAvg >= 30) score -= 1;
+
+  const finalScore = Math.max(0, Math.min(100, score));
+  return {
+    index: finalScore,
+    description: getClothingDescription(finalScore).text,
+    image: getClothingDescription(finalScore).image
+  };
+}
+
 type WeatherContextType = {
   weather: WeatherData | null;
   loading: boolean;
   error: string | null;
+  clothingIndex: ClothingIndex | null;
 };
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
@@ -87,6 +188,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [clothingIndex, setClothingIndex] = useState<ClothingIndex | null>(null);
   const { time } = useTime();
 
   const API_PARAMS = {
@@ -109,6 +211,14 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
         }
         const data: WeatherData = await response.json();
         setWeather(data);
+        
+        // 服装指数の計算
+        if (data.forecasts[0]) {
+          const todayForecast = data.forecasts[0];
+          const clothingIndex = calculateClothingIndex(todayForecast);
+          setClothingIndex(clothingIndex);
+        }
+        
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : '予期せぬエラーが発生しました');
@@ -125,7 +235,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <WeatherContext.Provider value={{ weather, loading, error }}>
+    <WeatherContext.Provider value={{ weather, loading, error, clothingIndex }}>
       {children}
     </WeatherContext.Provider>
   );

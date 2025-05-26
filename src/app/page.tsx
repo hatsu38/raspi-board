@@ -7,11 +7,17 @@ export default function Home() {
   return (
     <TimeProvider>
       <WeatherProvider>
-        <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-          <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-            <Clock />
-            <Weather />
-          </main>
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+          <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <main className="flex flex-col items-center gap-8 max-w-4xl mx-auto">
+              <div className="w-full max-w-md">
+                <Clock />
+              </div>
+              <div className="w-full">
+                <Weather />
+              </div>
+            </main>
+          </div>
         </div>
       </WeatherProvider>
     </TimeProvider>
