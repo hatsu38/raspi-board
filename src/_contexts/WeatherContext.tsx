@@ -94,6 +94,21 @@ const waveToWindPenalty = (wave: number): number => {
   return 0;
 };
 
+const temperatureToScore = (avgTemp: number): number => {
+  if (avgTemp <= 0) return 5;
+  if (avgTemp <= 5) return 10;
+  if (avgTemp <= 10) return 20;
+  if (avgTemp <= 15) return 30;
+  if (avgTemp <= 20) return 40;
+  if (avgTemp <= 23) return 50;
+  if (avgTemp <= 26) return 60;
+  if (avgTemp <= 29) return 70;
+  if (avgTemp <= 32) return 80;
+  if (avgTemp <= 35) return 90;
+  return 100;
+};
+
+
 const getClothingDescription = (score: number): {
   text: string;
   image: string;
@@ -140,8 +155,37 @@ const getClothingDescription = (score: number): {
   };
 };
 
+const getDefaultTemperatureByMonth = (month: number): { max: number; min: number } => {
+  switch (month) {
+    case 1: return { max: 7, min: 1 };   // January
+    case 2: return { max: 8, min: 1 };   // February
+    case 3: return { max: 13, min: 5 };  // March
+    case 4: return { max: 18, min: 10 }; // April
+    case 5: return { max: 23, min: 15 }; // May
+    case 6: return { max: 26, min: 18 }; // June
+    case 7: return { max: 30, min: 23 }; // July
+    case 8: return { max: 32, min: 24 }; // August
+    case 9: return { max: 28, min: 21 }; // September
+    case 10: return { max: 22, min: 15 }; // October
+    case 11: return { max: 16, min: 9 }; // November
+    case 12: return { max: 11, min: 4 }; // December
+    default: return { max: 20, min: 10 }; // fallback
+  }
+};
+
+
 function calculateClothingIndex(forecast: Forecast): ClothingIndex {
-  const maxTemp = Number(forecast.temperature.max?.celsius ?? 20);
+  const dateObj = new Date(forecast.date);
+  const month = dateObj.getMonth() + 1;
+
+  const defaultTemp = getDefaultTemperatureByMonth(month);
+  
+  const maxTemp = Number(forecast.temperature.max?.celsius ?? defaultTemp.max);
+  const minTemp = Number(forecast.temperature.min?.celsius ?? defaultTemp.min);
+  const avgTemp = (maxTemp + minTemp) / 2;
+
+  let score = temperatureToScore(avgTemp);
+
   const weather = forecast.telop;
   const wave = parseWaveHeight(forecast.detail.wave);
   const windPenalty = waveToWindPenalty(wave);
@@ -150,8 +194,7 @@ function calculateClothingIndex(forecast: Forecast): ClothingIndex {
   const chanceOfRain = Object.values(forecast.chanceOfRain).map(r => parseInt(r) || 0);
   const rainAvg = chanceOfRain.length ? (chanceOfRain.reduce((a, b) => a + b) / chanceOfRain.length) : 0;
 
-  let score = maxTemp;
-
+  // スコア補正
   if (weather.includes('雨')) score -= 5;
   else if (weather.includes('曇')) score -= 2;
   else if (weather.includes('晴')) score += 2;
