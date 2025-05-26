@@ -65,15 +65,15 @@ export function Garbage({ date }: GarbageProps) {
   if (garbageTypes.length === 0) {
     return (
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">今日のゴミ出し</h3>
-        <p className="text-gray-300">ゴミ出しはありません</p>
+        <h3 className="text-lg font-semibold mb-2 text-white">今日のゴミ出し</h3>
+        <p className="text-white">ゴミ出しはありません</p>
       </div>
     );
   }
 
   return (
     <div className="text-center">
-      <h3 className="text-lg font-semibold mb-2">今日のゴミ出し</h3>
+      <h3 className="text-lg font-semibold mb-2 text-white">今日のゴミ出し</h3>
       <div className="flex flex-col gap-3">
         {garbageTypes.map((type) => (
           <div key={type.name} className="flex items-center justify-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-2 hover:bg-white/20 transition-colors">
@@ -86,10 +86,10 @@ export function Garbage({ date }: GarbageProps) {
               />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-medium text-gray-200">
+              <span className="text-sm font-medium text-white">
                 {type.name}
               </span>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-white/70">
                 {type.days.join('・')}曜日
                 {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
               </span>
