@@ -60,12 +60,13 @@ type GarbageProps = {
 };
 
 export function Garbage({ date }: GarbageProps) {
-  const garbageTypes = getGarbageTypes(date);
+  const tomorrow = date.add(1, 'day');
+  const garbageTypes = getGarbageTypes(tomorrow);
 
   if (garbageTypes.length === 0) {
     return (
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2 text-white">今日のゴミ出し</h3>
+        <h3 className="text-lg font-semibold mb-2 text-white">明日のゴミ出し</h3>
         <p className="text-white">ゴミ出しはありません</p>
       </div>
     );
@@ -73,11 +74,11 @@ export function Garbage({ date }: GarbageProps) {
 
   return (
     <div className="text-center">
-      <h3 className="text-lg font-semibold mb-2 text-white">今日のゴミ出し</h3>
+      <h3 className="text-lg font-semibold mb-2 text-white">明日のゴミ出し</h3>
       <div className="flex flex-col gap-3">
         {garbageTypes.map((type) => (
-          <div key={type.name} className="flex items-center justify-center gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-2 hover:bg-white/20 transition-colors">
-            <div className="relative w-12 h-12">
+          <div key={type.name} className="flex flex-col items-center justify-center gap-3 rounded-lg p-2 transition-colors">
+            <div className="relative w-26 h-26">
               <Image
                 src={type.image}
                 alt={type.name}
@@ -86,12 +87,13 @@ export function Garbage({ date }: GarbageProps) {
               />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-medium text-white">
+              <span className="text-lg font-semibold text-white flex items-center gap-1">
                 {type.name}
+                <span className="text-xs text-white/70">
+                (
+                  {type.days.join('・')}曜日 {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
+                )
               </span>
-              <span className="text-xs text-white/70">
-                {type.days.join('・')}曜日
-                {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
               </span>
             </div>
           </div>
