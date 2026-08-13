@@ -2,8 +2,10 @@ export type Forecast = {
   date: string;
   telop: string;
   temperature: {
-    max?: { celsius: string };
-    min?: { celsius: string };
+    // 当日の最高/最低気温は、その時刻を過ぎるとAPIがnullを返すようになる
+    // (例: 最高気温は正午過ぎ、最低気温は未明を過ぎると観測済み扱いになりnull)
+    max?: { celsius: string | null };
+    min?: { celsius: string | null };
   };
   chanceOfRain: {
     T00_06: string;
