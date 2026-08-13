@@ -13,58 +13,88 @@ type WeatherProps = {
 type WeatherCardProps = {
   forecast: Forecast;
   date: Dayjs;
+  dayLabel: string;
   isToday: boolean;
 };
 
-const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
+const DAY_LABELS = ['今日', '明日', '明後日'];
+
+const RAIN_SLOTS = [
+  { key: 'T00_06', label: '0-6' },
+  { key: 'T06_12', label: '6-12' },
+  { key: 'T12_18', label: '12-18' },
+  { key: 'T18_24', label: '18-24' },
+] as const;
+
+type TemperatureProps = {
+  label: string;
+  celsius?: string;
+  className: string;
+};
+
+const Temperature = ({ label, celsius, className }: TemperatureProps) => (
+  <div className="flex flex-col items-center">
+    <span className="fs-xs text-white/50">{label}</span>
+    <span className={`fs-xl font-bold leading-tight ${celsius ? className : 'text-white/30'}`}>
+      {celsius ?? '--'}
+      <span className="fs-sm font-semibold">°C</span>
+    </span>
+  </div>
+);
+
+const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) => {
   const garbageTypes = getGarbageTypes(date);
 
   return (
-    <div 
-      className={`flex flex-col items-center ${
-        isToday 
-          ? 'bg-white/10 rounded-lg p-2 sm:p-3 shadow-lg transform scale-105' 
-          : 'p-2'
+    <div
+      className={`flex min-h-0 flex-col items-center justify-between rounded-[2vh] p-[2vh] ${
+        isToday
+          ? 'bg-white/10 ring-1 ring-sky-400/40'
+          : 'bg-white/[0.04] border border-white/8'
       }`}
     >
-      <p className={`text-xs text-white mb-2 ${isToday ? 'font-bold' : ''}`}>
-        {date.format('MM/DD')}({date.format('ddd')})
-      </p>
-      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-2">
+      {/* 日付ヘッダー */}
+      <div className="flex items-center gap-[1.2vh]">
+        <span
+          className={`fs-xs rounded-full px-[1.4vh] py-[0.3vh] font-semibold ${
+            isToday ? 'bg-sky-400/20 text-sky-300' : 'bg-white/10 text-white/60'
+          }`}
+        >
+          {dayLabel}
+        </span>
+        <span className="fs-sm font-semibold text-white/80">
+          {date.format('M/D')}({date.format('ddd')})
+        </span>
+      </div>
+
+      {/* その日のゴミ出し */}
+      <div className="flex flex-wrap items-center justify-center gap-[1vh]">
         {garbageTypes.length > 0 ? (
           garbageTypes.map((type) => (
-            <div 
-              key={type.name} 
-              className="flex items-center gap-1 sm:gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg px-1.5 sm:px-2 py-1 sm:py-1.5 hover:bg-white/30 transition-colors"
+            <div
+              key={type.name}
+              className="flex items-center gap-[0.8vh] rounded-full bg-amber-400/15 px-[1.5vh] py-[0.5vh]"
             >
-              <div className="relative w-5 h-5 sm:w-6 sm:h-6">
+              <div className="relative h-[calc(2.8vh*var(--scale,1))] w-[calc(2.8vh*var(--scale,1))]">
                 <Image
                   src={type.image}
                   alt={type.name}
                   fill
-                  className="object-contain rounded-lg"
+                  className="object-contain"
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] sm:text-xs font-medium text-white leading-tight">
-                  {type.name}
-                </span>
-                <span className="text-[8px] sm:text-[10px] text-white/70 leading-tight">
-                  {type.days.join('・')}曜日
-                  {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
-                </span>
-              </div>
+              <span className="fs-xs font-medium text-amber-200">{type.name}</span>
             </div>
           ))
         ) : (
-          <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1.5">
-            <span className="text-[10px] sm:text-xs text-white/70">ゴミ出しなし</span>
-          </div>
+          <span className="fs-xs py-[0.5vh] text-white/35">ゴミ出しなし</span>
         )}
       </div>
-      <div className="flex items-center gap-2 mb-2">
+
+      {/* 天気アイコンと天気 */}
+      <div className="flex flex-col items-center gap-[0.5vh]">
         {forecast.image && (
-          <div className={`relative ${isToday ? 'w-14 h-14 sm:w-16 sm:h-16' : 'w-12 h-12 sm:w-14 sm:h-14'}`}>
+          <div className="relative h-[calc(8vh*var(--scale,1))] w-[calc(11vh*var(--scale,1))]">
             <Image
               src={forecast.image.url}
               alt={forecast.telop}
@@ -73,28 +103,40 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
             />
           </div>
         )}
+        <h3 className="fs-lg font-semibold text-white">{forecast.telop}</h3>
       </div>
-      <h3 className={`font-semibold mb-1 text-white ${isToday ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
-        {forecast.telop}
-      </h3>
-      <div className={`font-bold mb-2 text-white ${isToday ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
-        <p className="mb-0.5">
-          <span className="text-red-500">最高</span>
-          {forecast.temperature.max?.celsius || '--'}°C
-        </p>
-        <p>
-          <span className="text-blue-500">最低</span>
-          {forecast.temperature.min?.celsius || '--'}°C
-        </p>
+
+      {/* 最高・最低気温 */}
+      <div className="flex items-center gap-[4vh]">
+        <Temperature label="最高" celsius={forecast.temperature.max?.celsius} className="text-rose-300" />
+        <div className="h-[calc(5vh*var(--scale,1))] w-px bg-white/10" />
+        <Temperature label="最低" celsius={forecast.temperature.min?.celsius} className="text-sky-300" />
       </div>
-      <div className="text-[10px] sm:text-xs space-y-0.5">
-        {Object.entries(forecast.chanceOfRain)
-          .filter(([, value]) => value !== '--%')
-          .map(([time, value]) => (
-            <p key={time} className="text-white/70">
-              {time.replace('T', '').replace('_', '-')}: {value as string}
-            </p>
-          ))}
+
+      {/* 降水確率 */}
+      <div className="w-full">
+        <div className="grid grid-cols-4 rounded-[1.2vh] bg-black/25 py-[1vh]">
+          {RAIN_SLOTS.map((slot) => {
+            const chance = parseInt(forecast.chanceOfRain[slot.key]);
+            const isRainy = !Number.isNaN(chance) && chance >= 50;
+            return (
+              <div key={slot.key} className="flex flex-col items-center gap-[0.2vh]">
+                <span className="fs-2xs text-white/40">{slot.label}</span>
+                <span
+                  className={`fs-sm font-semibold ${
+                    Number.isNaN(chance)
+                      ? 'text-white/25'
+                      : isRainy
+                        ? 'text-sky-300'
+                        : 'text-white/80'
+                  }`}
+                >
+                  {Number.isNaN(chance) ? '--' : `${chance}%`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -103,39 +145,36 @@ const WeatherCard = ({ forecast, date, isToday }: WeatherCardProps) => {
 export function Weather({ dates }: WeatherProps) {
   const { weather, loading, error } = useWeather();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-red-500 p-4 text-center">
-        {error}
-      </div>
-    );
-  }
-
+  // 定期再取得中は前回のデータを表示し続ける(スピナーやエラーで画面をチラつかせない)
   if (!weather) {
+    if (loading) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <div className="h-[6vh] w-[6vh] animate-spin rounded-full border-b-2 border-white/60"></div>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <p className="fs-md text-rose-300">{error}</p>
+        </div>
+      );
+    }
     return null;
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-3 shadow-lg">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {weather.forecasts.slice(0, 3).map((forecast, index) => (
-          <WeatherCard
-            key={forecast.date}
-            forecast={forecast}
-            date={dates[index]}
-            isToday={index === 0}
-          />
-        ))}
-      </div>
+    <div className="grid h-full min-h-0 grid-cols-3 gap-[2.5vh]">
+      {weather.forecasts.slice(0, 3).map((forecast, index) => (
+        <WeatherCard
+          key={forecast.date}
+          forecast={forecast}
+          date={dates[index]}
+          dayLabel={DAY_LABELS[index]}
+          isToday={index === 0}
+        />
+      ))}
     </div>
   );
 }
-

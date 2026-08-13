@@ -1,85 +1,114 @@
 'use client';
 
+import { CSSProperties } from "react";
 import { Dayjs } from "dayjs";
 import { Weather } from "./Weather";
 import { Clock } from "./Clock";
 import { Garbage } from "./Garbage";
 import { useWeather } from "../_contexts/WeatherContext";
-import { useDisplayMode } from "../_contexts/DisplayModeContext";
+import { useDisplayMode, DISPLAY_MODES } from "../_contexts/DisplayModeContext";
 import Image from "next/image";
 
 type DashboardProps = {
   dates: Dayjs[];
 };
 
-export function Dashboard({ dates }: DashboardProps) {
+// 全画面モード時の文字・画像の拡大率(globals.css の --scale を参照)
+const fullscreenStyle = (scale: number) => ({ '--scale': scale } as CSSProperties);
+
+function ClothingIndexCard() {
   const { clothingIndex } = useWeather();
+
+  return (
+    <section className="panel flex min-h-0 flex-col items-center p-[2vh]">
+      <h3 className="fs-sm font-medium text-white/60">今日の服装指数</h3>
+      {clothingIndex ? (
+        <>
+          <div className="relative my-[1.5vh] w-full min-h-0 flex-1">
+            <Image
+              src={clothingIndex.image}
+              alt={clothingIndex.description}
+              fill
+              className="object-contain rounded-[1.5vh]"
+            />
+          </div>
+          <p className="fs-md text-center font-semibold leading-snug text-white">
+            {clothingIndex.description}
+          </p>
+        </>
+      ) : (
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <p className="fs-md text-white/40">取得中…</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ModeIndicator() {
+  const { mode } = useDisplayMode();
+
+  return (
+    <div className="pointer-events-none absolute bottom-[1.2vh] left-1/2 flex -translate-x-1/2 gap-[1vh]">
+      {DISPLAY_MODES.map((m) => (
+        <span
+          key={m}
+          className={`h-[0.8vh] rounded-full transition-all duration-300 ${
+            m === mode ? 'w-[3.5vh] bg-white/60' : 'w-[0.8vh] bg-white/20'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function Dashboard({ dates }: DashboardProps) {
   const { mode } = useDisplayMode();
 
   const renderContent = () => {
     switch (mode) {
       case 'clock':
         return (
-          <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800">
-            <div className="transform scale-150">
-              <Clock />
-            </div>
+          <div className="flex h-full items-center justify-center" style={fullscreenStyle(2.2)}>
+            <Clock />
           </div>
         );
       case 'garbage':
         return (
-          <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800">
-            <div className="transform scale-150">
-              <Garbage date={dates[0]} />
-            </div>
+          <div className="h-full p-[6vh]" style={fullscreenStyle(1.8)}>
+            <Garbage date={dates[0]} />
           </div>
         );
       case 'weather':
         return (
-          <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800">
-            <div className="transform scale-150">
-              <Weather dates={dates} />
-            </div>
+          <div className="h-full p-[3vh]" style={fullscreenStyle(1.3)}>
+            <Weather dates={dates} />
           </div>
         );
       default:
         return (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 flex items-center justify-center">
+          <div className="grid h-full grid-rows-[5fr_7fr] gap-[2.5vh] p-[2.5vh] pb-[3.5vh]">
+            <div className="grid min-h-0 grid-cols-[1.2fr_1fr_1fr] gap-[2.5vh]">
+              <section className="panel flex items-center justify-center">
                 <Clock />
-              </div>
-              {clothingIndex && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4">
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2 text-white">今日の服装指数</h3>
-                    <div className="flex flex-col items-center space-y-2">
-                      <div className="relative w-20 h-20 sm:w-30 sm:h-30 rounded-lg">
-                        <Image
-                          src={clothingIndex.image}
-                          alt={clothingIndex.description}
-                          className="object-contain rounded-lg"
-                          fill
-                        />
-                      </div>
-                      <p className="text-white text-md">{clothingIndex.description}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4">
+              </section>
+              <ClothingIndexCard />
+              <section className="panel min-h-0">
                 <Garbage date={dates[0]} />
-              </div>
+              </section>
             </div>
-            <Weather dates={dates} />
-          </>
+            <div className="min-h-0">
+              <Weather dates={dates} />
+            </div>
+          </div>
         );
     }
   };
 
   return (
-    <div className="w-full space-y-4">
+    <>
       {renderContent()}
-    </div>
+      <ModeIndicator />
+    </>
   );
-} 
+}
