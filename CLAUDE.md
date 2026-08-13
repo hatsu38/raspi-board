@@ -18,6 +18,17 @@ npm run lint:fix   # eslint --fix (src 配下)
 
 テストフレームワークは未導入。テストを追加する場合はまず選定から必要。
 
+## 動作確認
+
+UI の動作確認には Playwright MCP(ルートの `.mcp.json` で定義)を使うこと。`npm run dev` で dev サーバーを起動した上で:
+
+1. `browser_navigate` で `http://localhost:3000` を開く
+2. `browser_resize` で 1920x1080 にして 7 インチディスプレイ相当の表示を確認する
+3. クリックで 4 モード(default → clock → garbage → weather)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
+4. `browser_console_messages` でコンソールエラーがないことを確認する
+
+Playwright のブラウザが未インストールの場合は `npx playwright install chromium` を先に実行する。
+
 ## アーキテクチャ
 
 ### レンダリング構成
