@@ -21,23 +21,29 @@ function ClothingIndexCard() {
 
   return (
     <section className="panel flex min-h-0 flex-col items-center p-[2vh]">
-      <h3 className="fs-sm font-medium text-white/60">今日の服装指数</h3>
+      <h3 className="fs-sm shrink-0 font-medium text-white/60">今日の服装指数</h3>
       {clothingIndex ? (
         <>
-          {/* aspect-square で幅から高さを決めることで、flex-1 の高さ確定を待たずに
-              next/image の fill が高さ0と誤認する警告を避ける */}
-          <div className="relative my-[1.5vh] aspect-square w-[65%] max-h-full">
-            <Image
-              src={clothingIndex.image}
-              alt={clothingIndex.description}
-              fill
-              // 常時表示画面でファーストビューに写る画像のため、
-              // LCP候補として優先読み込みする
-              priority
-              className="object-contain rounded-[1.5vh]"
-            />
+          {/* 画像は見出しと説明文を除いた残り高さに収める。
+              幅基準(aspect-square + w-*)だと画像がカード高を超えて説明文をはみ出させるため、
+              h-full で高さから正方形を作る。flex-1 で高さが確定するので
+              next/image の fill が高さ0と誤認する警告も出ない。
+              カードが極端に細い場合は max-w-full が優先されて横長になるが、
+              object-contain なので画像の比率は崩れない */}
+          <div className="flex min-h-0 flex-1 items-center justify-center py-[1.5vh]">
+            <div className="relative aspect-square h-full max-w-full">
+              <Image
+                src={clothingIndex.image}
+                alt={clothingIndex.description}
+                fill
+                // 常時表示画面でファーストビューに写る画像のため、
+                // LCP候補として優先読み込みする
+                priority
+                className="object-contain rounded-[1.5vh]"
+              />
+            </div>
           </div>
-          <p className="fs-md text-center font-semibold leading-snug text-white">
+          <p className="fs-md shrink-0 text-balance text-center font-semibold leading-snug text-white">
             {clothingIndex.description}
           </p>
         </>
