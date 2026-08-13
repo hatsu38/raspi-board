@@ -21,7 +21,7 @@ function ClothingIndexCard() {
 
   return (
     <section className="panel flex min-h-0 flex-col items-center p-[2vh]">
-      <h3 className="fs-sm shrink-0 font-medium text-white/60">今日の服装指数</h3>
+      <h3 className="card-title fs-sm shrink-0 font-bold">きょうの服装</h3>
       {clothingIndex ? (
         <>
           {/* 画像は見出しと説明文を除いた残り高さに収める。
@@ -39,17 +39,17 @@ function ClothingIndexCard() {
                 // 常時表示画面でファーストビューに写る画像のため、
                 // LCP候補として優先読み込みする
                 priority
-                className="object-contain rounded-[1.5vh]"
+                className="illustration object-contain rounded-[1.5vh]"
               />
             </div>
           </div>
-          <p className="fs-md shrink-0 text-balance text-center font-semibold leading-snug text-white">
+          <p className="fs-md shrink-0 text-balance text-center font-bold leading-snug text-ink">
             {clothingIndex.description}
           </p>
         </>
       ) : (
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <p className="fs-md text-white/40">取得中…</p>
+          <p className="fs-md text-ink-faint">取得中…</p>
         </div>
       )}
     </section>
@@ -65,7 +65,7 @@ function ModeIndicator() {
         <span
           key={m}
           className={`h-[0.8vh] rounded-full transition-all duration-300 ${
-            m === mode ? 'w-[3.5vh] bg-white/60' : 'w-[0.8vh] bg-white/20'
+            m === mode ? 'w-[3.5vh] bg-accent' : 'w-[0.8vh] bg-ink-faint opacity-40'
           }`}
         />
       ))}

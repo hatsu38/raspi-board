@@ -71,13 +71,13 @@ export function Garbage({ date }: GarbageProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col items-center p-[2vh]">
-      <h3 className="fs-sm font-medium text-white/60">
-        明日のゴミ出し
-        <span className="ml-[1.5vh] text-white/40">{tomorrow.format('M/D')}({tomorrow.format('ddd')})</span>
+      <h3 className="card-title fs-sm shrink-0 font-bold">
+        あすのゴミ
+        <span className="ml-[1vh] font-medium">{tomorrow.format('M/D')}({tomorrow.format('ddd')})</span>
       </h3>
       {garbageTypes.length === 0 ? (
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <p className="fs-lg font-medium text-white/50">ゴミ出しはありません</p>
+          <p className="fs-lg font-medium text-ink-faint">ゴミ出しはありません</p>
         </div>
       ) : (
         <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-[1.5vh] py-[1vh]">
@@ -88,14 +88,14 @@ export function Garbage({ date }: GarbageProps) {
                   src={type.image}
                   alt={type.name}
                   fill
-                  className="object-contain rounded-[1.5vh]"
+                  className="illustration object-contain rounded-[1.5vh]"
                 />
               </div>
               <div className="flex flex-col items-start gap-[0.6vh]">
-                <span className="fs-lg font-bold leading-tight text-white">
+                <span className="fs-lg font-bold leading-tight text-ink">
                   {type.name}
                 </span>
-                <span className="fs-xs rounded-full bg-white/10 px-[1.4vh] py-[0.4vh] text-white/60">
+                <span className="fs-xs rounded-full bg-soft px-[1.4vh] py-[0.4vh] text-ink-soft">
                   {formatGarbageRule(type)}
                 </span>
               </div>
