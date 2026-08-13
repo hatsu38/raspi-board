@@ -100,7 +100,9 @@ const getWindPenalty = (wave: number, wind: string): number => {
 };
 
 const parseWaveHeight = (wave: string): number => {
-  const match = wave.match(/(\d+)/);
+  // 気象庁APIは波高を「３メートル」のように全角数字で返すため、
+  // \d(半角数字)にマッチさせる前にNFKC正規化で半角に揃える
+  const match = wave.normalize('NFKC').match(/(\d+)/);
   return match ? parseInt(match[1]) : 0;
 };
 

@@ -128,6 +128,14 @@ describe('calculateClothingScore', () => {
       expect(calculateClothingScore(rough)).toBe(58 - 5);
     });
 
+    it('気象庁APIが実際に返す全角数字の波高も正しく解釈する', () => {
+      // weather.tsukumijima.net の実レスポンスは "３メートル" のように
+      // 全角数字を返す(半角の"3m"ではない)
+      const forecast = createNeutralForecast({ detail: { wave: '３メートル', wind: '' } });
+
+      expect(calculateClothingScore(forecast)).toBe(58 - 5);
+    });
+
     it('北風・強い風はそれぞれ独立に減点する', () => {
       const forecast = createNeutralForecast({
         detail: { wave: '2m', wind: '北の風やや強い' },
