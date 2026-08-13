@@ -111,6 +111,20 @@ sudo reboot
 
 再起動後、アドレスバーなしで対象URLが全画面表示されればOK。
 
+### デプロイした変更の反映
+
+キオスク表示はページを開いたまま放置され、`--kiosk` の全画面ではリロード操作もできない。そのため、デプロイしてもPi側は古いページを掴んだままになる。
+
+これを避けるため、アプリ自身が5分ごとに `/version.json` を読み、ビルドが変わっていたら自分をリロードする。**デプロイ後は最大5分で自動的に反映されるので、Piに触る必要はない。**
+
+`public/version.json` は `npm run build` / `npm run dev` の前に `scripts/generate-version.mjs` が生成する（Git管理外）。いま表示されているのがどのコミットかは、ブラウザで `<デプロイ先のURL>/version.json` を開けば確認できる。
+
+5分待たずに反映したい場合は、SSHで再起動するのが確実。
+
+```bash
+ssh <ユーザー名>@<Piのホスト名>.local 'sudo reboot'
+```
+
 ### セキュリティに関する注意
 
 - **SSHはパスワード認証をオフにする**: 鍵認証の登録が済んだら `/etc/ssh/sshd_config` の `PasswordAuthentication` を `no` にし、`sudo systemctl restart ssh` で反映する。総当たり攻撃のリスクを減らせる

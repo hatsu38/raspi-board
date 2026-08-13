@@ -60,6 +60,16 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 
 モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
 
+### デプロイの自動反映 (`src/_hooks/useReloadOnNewDeploy.ts`)
+
+キオスク表示はページを開いたまま放置され、全画面（`--kiosk`）ではリロード操作もできないため、デプロイしてもブラウザが古いページを掴んだままになる。これを避けるため、`page.tsx` の `Home` が `useReloadOnNewDeploy` を呼び、5 分ごとに `/version.json` を `cache: 'no-store'` で読んで、起動時に読んだ値から変わっていたら `location.reload()` する。
+
+`public/version.json` は `prebuild` / `predev` フックで `scripts/generate-version.mjs` が生成する（`.gitignore` 済み）。比較に使うのは `builtAt`（ビルド時刻）で、コミット SHA ではない。同じコミットを再デプロイしても値が変わるようにするため。同ファイルの `commit` は「いま画面に出ているのはどのコミットか」を人が確認するための付加情報で、判定には使わない。
+
+取得に失敗した回（dev サーバーで未生成、一時的な通信失敗）は判定を次回に見送る。誤リロードを避けるため、`null` を「変化」として扱わない。
+
+リロードの副作用は `src/_libs/reloadPage.ts` に切り出してある。jsdom では `window.location` を差し替えられず、テストから `reload` をモックできないため。
+
 ### レイアウトとタイポグラフィ
 
 7 インチ 1920x1080 の横長ディスプレイにスクロールなしでフィットさせるため、文字サイズはすべて `vh` 基準の独自クラス（`globals.css` の `.fs-2xs`〜`.fs-clock`）で指定する。各クラスは `calc(NvH * var(--scale, 1))` の形で、全画面モードでは親要素の `--scale` を変えるだけで一括拡大できる。画像サイズなど個別の寸法も `h-[calc(8vh*var(--scale,1))]` のように同じ変数を参照する。Tailwind の `text-*` サイズクラスは使わない。
@@ -92,7 +102,7 @@ dayjs は必ずこのモジュール経由で import する。ja ロケールと
 
 ### ディレクトリ規約
 
-`src/_components/` `src/_contexts/` `src/_utils/` `src/_libs/` `src/types/`。`_` 接頭辞は App Router のルーティング対象から外すため（private folder 規約）。パスエイリアスは `@/*` → `./src/*` だが、現状のコードは相対パス import で統一されている。
+`src/_components/` `src/_contexts/` `src/_hooks/` `src/_utils/` `src/_libs/` `src/types/`。`_` 接頭辞は App Router のルーティング対象から外すため（private folder 規約）。パスエイリアスは `@/*` → `./src/*` だが、現状のコードは相対パス import で統一されている。
 
 ## 既知の注意点
 
