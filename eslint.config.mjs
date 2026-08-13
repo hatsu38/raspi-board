@@ -11,6 +11,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude Codeのgit worktree(.claude/worktrees/*)はリポジトリの
+    // 別チェックアウトを丸ごと含むため、二重にlintしないよう除外する
+    ".claude/**",
   ]),
 ]);
 
