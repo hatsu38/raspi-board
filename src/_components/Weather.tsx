@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Dayjs } from "dayjs";
 import type { Forecast } from "../types/weather";
 import { getGarbageTypes } from "./Garbage";
+import { WeatherIcon } from "./WeatherIcon";
 
 type WeatherProps = {
   dates: Dayjs[];
@@ -34,35 +35,58 @@ type TemperatureProps = {
 
 const Temperature = ({ label, celsius, className }: TemperatureProps) => (
   <div className="flex flex-col items-center">
-    <span className="fs-xs text-white/50">{label}</span>
-    <span className={`fs-xl font-bold leading-tight ${celsius ? className : 'text-white/30'}`}>
+    <span className="fs-xs font-medium text-ink-soft">{label}</span>
+    <span className={`fs-xl font-bold leading-tight ${celsius ? className : 'text-ink-faint'}`}>
       {celsius ?? '--'}
-      <span className="fs-sm font-semibold">°C</span>
+      {/* ° と C を並べると丸ゴシックでは字間が開いて見えるため合成済みの1文字を使う */}
+      <span className="fs-sm font-bold">℃</span>
     </span>
   </div>
 );
+
+/*
+ * 降水確率は数字だけだと遠目で読み取れないため、バーの高さでも同じ値を示す。
+ * 傘が必要かどうかを一瞬で判断できるようにするのが目的。
+ */
+const RainChance = ({ label, value }: { label: string; value: string }) => {
+  const chance = parseInt(value);
+  const isUnknown = Number.isNaN(chance);
+
+  return (
+    <div className="flex flex-col items-center gap-[0.3vh]">
+      <span className="fs-2xs text-ink-faint">{label}</span>
+      {/* 短いバーが角丸に埋もれないよう、半径は控えめにしている */}
+      <div className="flex h-[calc(4.5vh*var(--scale,1))] w-[65%] items-end overflow-hidden rounded-[0.6vh] bg-bar-track">
+        {!isUnknown && (
+          <i className="w-full rounded-[0.6vh] bg-cold" style={{ height: `${chance}%` }} />
+        )}
+      </div>
+      <span className={`fs-sm font-bold ${isUnknown ? 'text-ink-faint' : 'text-ink'}`}>
+        {isUnknown ? '--' : `${chance}%`}
+      </span>
+    </div>
+  );
+};
 
 const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) => {
   const garbageTypes = getGarbageTypes(date);
 
   return (
     <div
-      className={`flex min-h-0 flex-col items-center justify-between rounded-[2vh] p-[2vh] ${
-        isToday
-          ? 'bg-white/10 ring-1 ring-sky-400/40'
-          : 'bg-white/[0.04] border border-white/8'
+      className={`panel flex min-h-0 flex-col items-center justify-between p-[2vh] ${
+        isToday ? 'panel-accent' : ''
       }`}
     >
       {/* 日付ヘッダー */}
       <div className="flex items-center gap-[1.2vh]">
         <span
-          className={`fs-xs rounded-full px-[1.4vh] py-[0.3vh] font-semibold ${
-            isToday ? 'bg-sky-400/20 text-sky-300' : 'bg-white/10 text-white/60'
+          className={`fs-xs rounded-full px-[1.4vh] py-[0.3vh] font-bold ${
+            isToday ? 'bg-accent text-on-accent' : 'bg-soft text-ink-soft'
           }`}
         >
           {dayLabel}
         </span>
-        <span className="fs-sm font-semibold text-white/80">
+        <span className="fs-sm font-bold text-ink">
           {date.format('M/D')}({date.format('ddd')})
         </span>
       </div>
@@ -73,69 +97,49 @@ const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) =>
           garbageTypes.map((type) => (
             <div
               key={type.name}
-              className="flex items-center gap-[0.8vh] rounded-full bg-amber-400/15 px-[1.5vh] py-[0.5vh]"
+              className="flex items-center gap-[0.8vh] rounded-full bg-leaf-soft px-[1.5vh] py-[0.5vh]"
             >
               <div className="relative h-[calc(2.8vh*var(--scale,1))] w-[calc(2.8vh*var(--scale,1))]">
                 <Image
                   src={type.image}
                   alt={type.name}
                   fill
-                  className="object-contain"
+                  className="illustration object-contain"
                 />
               </div>
-              <span className="fs-xs font-medium text-amber-200">{type.name}</span>
+              <span className="fs-xs font-bold text-leaf-ink">{type.name}</span>
             </div>
           ))
         ) : (
-          <span className="fs-xs py-[0.5vh] text-white/35">ゴミ出しなし</span>
+          <span className="fs-xs py-[0.5vh] text-ink-faint">ゴミ出しなし</span>
         )}
       </div>
 
       {/* 天気アイコンと天気 */}
       <div className="flex flex-col items-center gap-[0.5vh]">
-        {forecast.image && (
-          <div className="relative h-[calc(8vh*var(--scale,1))] w-[calc(11vh*var(--scale,1))]">
-            <Image
-              src={forecast.image.url}
-              alt={forecast.telop}
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
-        <h3 className="fs-lg font-semibold text-white">{forecast.telop}</h3>
+        <div className="relative h-[calc(8.5vh*var(--scale,1))] w-[calc(8.5vh*var(--scale,1))]">
+          <WeatherIcon telop={forecast.telop} fallbackUrl={forecast.image?.url} />
+        </div>
+        <h3 className="fs-lg font-bold text-ink">{forecast.telop}</h3>
       </div>
 
       {/* 最高・最低気温 */}
       <div className="flex items-center gap-[4vh]">
-        <Temperature label="最高" celsius={forecast.temperature.max?.celsius} className="text-rose-300" />
-        <div className="h-[calc(5vh*var(--scale,1))] w-px bg-white/10" />
-        <Temperature label="最低" celsius={forecast.temperature.min?.celsius} className="text-sky-300" />
+        <Temperature label="最高" celsius={forecast.temperature.max?.celsius} className="text-hot" />
+        <div className="h-[calc(5vh*var(--scale,1))] w-px bg-line" />
+        <Temperature label="最低" celsius={forecast.temperature.min?.celsius} className="text-cold" />
       </div>
 
       {/* 降水確率 */}
       <div className="w-full">
-        <div className="grid grid-cols-4 rounded-[1.2vh] bg-black/25 py-[1vh]">
-          {RAIN_SLOTS.map((slot) => {
-            const chance = parseInt(forecast.chanceOfRain[slot.key]);
-            const isRainy = !Number.isNaN(chance) && chance >= 50;
-            return (
-              <div key={slot.key} className="flex flex-col items-center gap-[0.2vh]">
-                <span className="fs-2xs text-white/40">{slot.label}</span>
-                <span
-                  className={`fs-sm font-semibold ${
-                    Number.isNaN(chance)
-                      ? 'text-white/25'
-                      : isRainy
-                        ? 'text-sky-300'
-                        : 'text-white/80'
-                  }`}
-                >
-                  {Number.isNaN(chance) ? '--' : `${chance}%`}
-                </span>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-4 rounded-[1.2vh] bg-soft py-[1vh]">
+          {RAIN_SLOTS.map((slot) => (
+            <RainChance
+              key={slot.key}
+              label={slot.label}
+              value={forecast.chanceOfRain[slot.key]}
+            />
+          ))}
         </div>
       </div>
     </div>
@@ -150,14 +154,14 @@ export function Weather({ dates }: WeatherProps) {
     if (loading) {
       return (
         <div className="flex h-full items-center justify-center">
-          <div className="h-[6vh] w-[6vh] animate-spin rounded-full border-b-2 border-white/60"></div>
+          <div className="h-[6vh] w-[6vh] animate-spin rounded-full border-b-2 border-accent"></div>
         </div>
       );
     }
     if (error) {
       return (
         <div className="flex h-full items-center justify-center">
-          <p className="fs-md text-rose-300">{error}</p>
+          <p className="fs-md text-hot">{error}</p>
         </div>
       );
     }

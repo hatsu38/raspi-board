@@ -1,20 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import { Zen_Maru_Gothic } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/*
+ * 丸ゴシックで柔らかい印象にする。Raspberry Pi の Chromium には丸ゴシックが
+ * 入っていないため、システムフォント任せにはできず Web フォントで配信する。
+ *
+ * 日本語グリフは unicode-range で 120 個ほどのチャンクに分割されて自前配信される。
+ * preload を有効にすると全チャンクに <link rel="preload"> が付いて初回に 2.1MB を
+ * 落としてしまうため、preload: false にして必要なチャンクだけ遅延取得させている
+ * (display: "swap" なので初回だけ一瞬フォールバック書体で描画される)。
+ * ファイル数を抑えるため weight は本文用と強調用の 2 つに絞っている。
+ */
+const zenMaruGothic = Zen_Maru_Gothic({
+  variable: "--font-zen-maru",
+  weight: ["500", "700"],
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const notoSansJp = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -36,12 +39,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSansJp.variable} antialiased`}
-      >
-        {children}
-      </body>
+    // フォント変数は html に置く。globals.css の --font-sans が :root で
+    // var(--font-zen-maru) を参照するため、body に置くと解決できず無効になる
+    <html lang="ja" className={zenMaruGothic.variable}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

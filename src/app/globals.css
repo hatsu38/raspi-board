@@ -1,17 +1,130 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans), var(--font-noto-sans-jp), sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+/*
+ * 配色トークン(昼)。
+ * public/clothes/ public/garbages/ のイラストがクリーム地・暖色・茶のアウトラインで
+ * 描かれているため、UI 側もそのトーンに合わせている。文字色は黒ではなく濃い茶。
+ *
+ * ここで定義した生の変数を下の @theme inline で Tailwind の色ユーティリティに露出する。
+ * 変数名が衝突しないよう、生の変数は接頭辞なし(--ink)、Tailwind 側は名前空間付き
+ * (--color-ink)にしている。
+ */
+:root {
+  --base: #fbf3e3;
+  --surface: #fffcf5;
+  --surface-today: #fff8ea;
+  --line: #ebdfc7;
+
+  --ink: #4a3728;
+  --ink-soft: #93765b;
+  --ink-faint: #b6a188;
+
+  --accent: #e08a5b;
+  --on-accent: #ffffff;
+  --accent-soft: rgba(224, 138, 91, 0.16);
+  --accent-ink: #b4623a;
+
+  --hot: #d2624b;
+  --cold: #5e9bc0;
+  --sun: #f0b54e;
+  --cloud: #c9bca6;
+
+  --leaf-soft: rgba(124, 158, 88, 0.18);
+  --leaf-ink: #5f7d3e;
+
+  /* 淡い下地(丸バッジ・降水確率の枠・区切り線) */
+  --soft: rgba(122, 90, 58, 0.08);
+  --bar-track: rgba(122, 90, 58, 0.12);
+
+  /* 背景のほのかな光。左上に朝日、右下に若草 */
+  --glow-warm: rgba(224, 138, 91, 0.13);
+  --glow-leaf: rgba(124, 158, 88, 0.1);
+
+  --card-radius: calc(2.2vh * var(--scale, 1));
+  --card-shadow: 0 0.5vh 1.4vh rgba(122, 90, 58, 0.12);
+  --card-shadow-today: 0 0.5vh 1.6vh rgba(224, 138, 91, 0.22);
 }
 
-/* 常時表示ボード用: 常にダーク表示。スクロール・オーバースクロールを禁止 */
+/*
+ * 配色トークン(夜)。useThemeByHour が html に data-theme="night" を付ける。
+ * 常時表示のボードが夜に光源になるのを避けるため、地を深い茶に落とす。
+ * 色相は昼と同じ暖色系のまま彩度だけ下げ、印象が別物にならないようにしている。
+ */
+[data-theme="night"] {
+  --base: #221a14;
+  --surface: #2e241b;
+  --surface-today: #382a1e;
+  --line: #453528;
+
+  --ink: #f0e4d2;
+  --ink-soft: #bca88e;
+  --ink-faint: #8a7660;
+
+  --accent: #c97a52;
+  --on-accent: #221a14;
+  --accent-soft: rgba(201, 122, 82, 0.2);
+  --accent-ink: #e0a07c;
+
+  --hot: #d97c63;
+  --cold: #7fadcc;
+  --sun: #c99a48;
+  --cloud: #7e7263;
+
+  --leaf-soft: rgba(134, 162, 99, 0.2);
+  --leaf-ink: #a7c084;
+
+  --soft: rgba(255, 248, 235, 0.07);
+  --bar-track: rgba(255, 248, 235, 0.1);
+
+  --glow-warm: rgba(201, 122, 82, 0.1);
+  --glow-leaf: rgba(134, 162, 99, 0.07);
+
+  --card-shadow: 0 0.5vh 1.4vh rgba(0, 0, 0, 0.35);
+  --card-shadow-today: 0 0.5vh 1.6vh rgba(201, 122, 82, 0.22);
+}
+
+/*
+ * inline を付けているのは、utility が --color-ink 経由の二段参照ではなく
+ * var(--ink) を直接展開するようにするため。夜モードの上書きが確実に効く。
+ */
+@theme inline {
+  --font-sans: var(--font-zen-maru), sans-serif;
+
+  --color-base: var(--base);
+  --color-surface: var(--surface);
+  --color-surface-today: var(--surface-today);
+  --color-line: var(--line);
+
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --color-hot: var(--hot);
+  --color-cold: var(--cold);
+
+  --color-leaf-soft: var(--leaf-soft);
+  --color-leaf-ink: var(--leaf-ink);
+
+  --color-soft: var(--soft);
+  --color-bar-track: var(--bar-track);
+
+  --radius-card: var(--card-radius);
+  --shadow-card: var(--card-shadow);
+  --shadow-today: var(--card-shadow-today);
+}
+
+/* 常時表示ボード用: スクロール・オーバースクロールを禁止 */
 html,
 body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: #020617;
+  background: var(--base);
 }
 
 /*
@@ -21,7 +134,7 @@ body {
  * - tap-highlight … タップ時のハイライトを消す
  */
 body {
-  color: #f8fafc;
+  color: var(--ink);
   font-family: var(--font-sans);
   user-select: none;
   -webkit-user-select: none;
@@ -33,11 +146,47 @@ img {
   -webkit-user-drag: none;
 }
 
+/*
+ * 服装・ゴミのイラストは背景を含んだ絵のため、夜は明るい面として浮いてしまう。
+ * 画像を差し替えずに済むよう、夜だけ輝度と彩度をわずかに落として馴染ませる。
+ */
+[data-theme="night"] .illustration {
+  filter: brightness(0.85) saturate(0.92);
+}
+
+/* 背景のグラデーション。色は昼夜のトークンに追従する */
+.board-bg {
+  background:
+    radial-gradient(60% 80% at 15% 0%, var(--glow-warm), transparent),
+    radial-gradient(50% 70% at 90% 100%, var(--glow-leaf), transparent);
+}
+
 /* カードの共通スタイル */
 .panel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 2vh;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+}
+
+/* 「今日」など強調するカード */
+.panel-accent {
+  background: var(--surface-today);
+  border-color: var(--accent);
+  box-shadow: var(--card-shadow-today);
+}
+
+/*
+ * カードの見出し。小さな灰色文字だと視線の起点にならないため、
+ * 淡い色を敷いた丸バッジにしている。padding も --scale に追従させて
+ * 全画面モードで一緒に拡大する。
+ */
+.card-title {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  padding: calc(0.4vh * var(--scale, 1)) calc(1.3vh * var(--scale, 1));
+  white-space: nowrap;
 }
 
 /*
