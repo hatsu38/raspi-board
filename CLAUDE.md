@@ -12,11 +12,15 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 npm run dev        # 開発サーバー (Turbopack, http://localhost:3000)
 npm run build      # 本番ビルド
 npm run start      # 本番サーバー
-npm run lint       # next lint
-npm run lint:fix   # eslint --fix (src 配下)
+npm run lint       # eslint .
+npm run lint:fix   # eslint . --fix
+npm run test       # Jest (ユニット・コンポーネントテスト)
+npm run test:watch # Jest watch モード
 ```
 
-テストフレームワークは未導入。テストを追加する場合はまず選定から必要。
+### テスト
+
+ユニット・コンポーネントテストは Jest + React Testing Library（`next/jest` 経由でセットアップ、`jest.config.ts`）。テストファイルは対象と同じディレクトリに `*.test.ts(x)` として置く。純粋関数（`clothingScore.ts` など）を優先してテストし、日付や API レスポンスに依存するテストは `Forecast` などの最小限のモックオブジェクトを都度組み立てる（既存のモックを使い回して意図を薄めない）。
 
 ## 動作確認
 
