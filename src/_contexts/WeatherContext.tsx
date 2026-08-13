@@ -25,7 +25,8 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
 
   const fetchWeather = async () => {
     try {
-      setLoading(true);
+      // loading の初期値は true。再取得時に true へ戻さないことで、
+      // 5分ごとの更新中も前回のデータを表示し続けられる
       const response = await fetch(WEATHER_API_BASE_URL);
       if (!response.ok) {
         throw new Error('天気情報の取得に失敗しました');
@@ -47,6 +48,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setStateはすべてawait後に実行される非同期関数で、マウント時fetch+定期更新の標準パターン
     fetchWeather();
     const interval = setInterval(fetchWeather, REFRESH_INTERVAL);
     return () => clearInterval(interval);
