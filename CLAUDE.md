@@ -92,7 +92,7 @@ dayjs は必ずこのモジュール経由で import する。ja ロケールと
 ## 既知の注意点
 
 - **`public/` の画像ファイル名は ASCII のみにする**: macOS は濁点・半濁点かなを NFD(分解形)でファイルシステムに保存するため、日本語ファイル名はブラウザの NFC リクエストと一致せず、本番サーバー(`next start`)で 404 になる(dev サーバーでは正規化されて動くため気づきにくい)。
-- **next/image は最適化オフ**: ローカル配信のキオスク用途のため `next.config.ts` で `images.unoptimized: true` にしている。これにより API が返す `https://www.jma.go.jp/...` の天気アイコンも `remotePatterns` なしで表示できる。最適化を有効に戻す場合は jma.go.jp の `remotePatterns` 追加が必要。
+- **next/image は最適化オフ**: ローカル配信のキオスク用途のため `next.config.ts` で `images.unoptimized: true` にしている。これにより API が返す `https://www.jma.go.jp/...` の天気アイコンも `remotePatterns` なしで表示できる。最適化を有効に戻す場合は jma.go.jp の `remotePatterns` 追加が必要。最適化オフのため、`public/clothes/` `public/garbages/` の画像は事前に長辺 500px 程度にリサイズ・pngquant で圧縮済み(実際の表示サイズは最大でも 350px 角程度)。新しい画像を追加する場合も同様に事前圧縮してから配置すること。
 - **未使用の設定と依存**: `.env` の `OPEN_WEATHER_API_KEY` / `EKISPART_API_KEY` / `YAHOO_API_KEY` と `next.config.ts` の `env` 宣言は、現状 `src/` のどこからも参照されていない。`axios` も同様に未使用（fetch を直接使用）。
 - **`next.config.ts` の `env` はクライアントバンドルに埋め込まれる**。ここに実際の秘密鍵を通すと公開されるため、サーバー側でのみ使う値をここに追加してはいけない。
 
