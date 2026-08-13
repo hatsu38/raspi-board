@@ -11,15 +11,22 @@ type TimeContextType = {
 const TimeContext = createContext<TimeContextType | undefined>(undefined);
 
 export function TimeProvider({ children }: { children: ReactNode }) {
-  const [time, setTime] = useState(DayJs());
+  // SSR 時と hydration 時で時刻テキストがズレると hydration エラーになるため、
+  // マウント後に初めて時刻を確定して描画を開始する
+  const [time, setTime] = useState<Dayjs | null>(null);
 
   useEffect(() => {
+    setTime(DayJs());
     const timer = setInterval(() => {
       setTime(DayJs());
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
+
+  if (time === null) {
+    return null;
+  }
 
   return (
     <TimeContext.Provider value={{ time }}>
