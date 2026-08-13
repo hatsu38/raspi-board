@@ -38,7 +38,13 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 | `WeatherContext` | 5 分ごとに天気 API を fetch。取得と同時に服装指数も計算して保持 |
 | `DisplayModeContext` | 表示モードを `default → clock → garbage → weather` の順に巡回 |
 
-モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を `fixed inset-0` + `transform scale-150` で全画面表示する（`Dashboard.tsx` の `renderContent`）。
+モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
+
+### レイアウトとタイポグラフィ
+
+7 インチ 1920x1080 の横長ディスプレイにスクロールなしでフィットさせるため、文字サイズはすべて `vh` 基準の独自クラス（`globals.css` の `.fs-2xs`〜`.fs-clock`）で指定する。各クラスは `calc(NvH * var(--scale, 1))` の形で、全画面モードでは親要素の `--scale` を変えるだけで一括拡大できる。画像サイズなど個別の寸法も `h-[calc(8vh*var(--scale,1))]` のように同じ変数を参照する。Tailwind の `text-*` サイズクラスは使わない。
+
+タッチディスプレイでの誤操作（長押しのテキスト選択・コンテキストメニュー・ピンチズーム → 仮想キーボードや選択ツールバーの出現要因）は、`globals.css` の `user-select: none` / `touch-action: manipulation`、`page.tsx` の `onContextMenu` 抑止、`layout.tsx` の `viewport`（`userScalable: false`）で防いでいる。
 
 ### データソース
 
@@ -70,6 +76,6 @@ dayjs は必ずこのモジュール経由で import する。ja ロケールと
 
 ## 既知の注意点
 
-- **next/image のリモートホスト未設定**: `Weather.tsx` は API が返す `https://www.jma.go.jp/...` の天気アイコンを `next/image` に渡しているが、`next.config.ts` に `images.remotePatterns` がない。そのため画像最適化エンドポイントが 400 を返し、天気アイコンは表示されていない（`/_next/image?url=...jma.go.jp...` で確認済み）。表示するには `remotePatterns` の追加が必要。
+- **next/image は最適化オフ**: ローカル配信のキオスク用途のため `next.config.ts` で `images.unoptimized: true` にしている。これにより API が返す `https://www.jma.go.jp/...` の天気アイコンも `remotePatterns` なしで表示できる。最適化を有効に戻す場合は jma.go.jp の `remotePatterns` 追加が必要。
 - **未使用の設定と依存**: `.env` の `OPEN_WEATHER_API_KEY` / `EKISPART_API_KEY` / `YAHOO_API_KEY` と `next.config.ts` の `env` 宣言は、現状 `src/` のどこからも参照されていない。`axios` も同様に未使用（fetch を直接使用）。
 - **`next.config.ts` の `env` はクライアントバンドルに埋め込まれる**。ここに実際の秘密鍵を通すと公開されるため、サーバー側でのみ使う値をここに追加してはいけない。
