@@ -91,3 +91,13 @@ dayjs は必ずこのモジュール経由で import する。ja ロケールと
 - **next/image は最適化オフ**: ローカル配信のキオスク用途のため `next.config.ts` で `images.unoptimized: true` にしている。これにより API が返す `https://www.jma.go.jp/...` の天気アイコンも `remotePatterns` なしで表示できる。最適化を有効に戻す場合は jma.go.jp の `remotePatterns` 追加が必要。
 - **未使用の設定と依存**: `.env` の `OPEN_WEATHER_API_KEY` / `EKISPART_API_KEY` / `YAHOO_API_KEY` と `next.config.ts` の `env` 宣言は、現状 `src/` のどこからも参照されていない。`axios` も同様に未使用（fetch を直接使用）。
 - **`next.config.ts` の `env` はクライアントバンドルに埋め込まれる**。ここに実際の秘密鍵を通すと公開されるため、サーバー側でのみ使う値をここに追加してはいけない。
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
