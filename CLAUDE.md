@@ -63,7 +63,7 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 
 ### 服装指数 (`src/_utils/clothingScore.ts`)
 
-最高/最低気温の平均から基礎スコアを出し、降水確率・天気 telop・波高/風向きの補正を加えて 0〜100 に clamp する。`MONTHLY_TEMPERATURES` は API が気温を返さないとき（当日以外の予報でよくある）のフォールバック値で、千葉の平年値。
+日中の活動時間帯に近い体感になるよう、最高気温 65% / 最低気温 35% の加重平均（`getFeelsLikeTemperature`）を基礎温度とする。この温度から `TEMPERATURE_SCORE_ANCHORS`（気温とスコアのアンカー点）を線形補間してベーススコアを出し、降水確率（06-12/12-18 のうち高い方）・天気 telop・波高/風向きの補正を加えて 0〜100 に clamp する。段階的な閾値ではなくアンカー間の線形補間にしているのは、近い気温同士（例: 21℃と24℃）でも指数が滑らかに変化するようにするため。`MONTHLY_TEMPERATURES` は API が気温を返さないとき（当日以外の予報でよくある）のフォールバック値で、千葉の平年値。
 
 スコアは 10 刻みの閾値で `public/clothes/<閾値>.png` の画像に対応する。文言は `CLOTHING_DESCRIPTIONS` のみで管理しており、画像ファイル名とは独立している。
 
