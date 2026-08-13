@@ -1,5 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// ローカルでは reuseExistingServer が有効なため、3000番を別プロジェクトが
+// 使っているとそのサーバーに対してテストしてしまう。PORT=3100 のように
+// 指定して衝突を避けられるようにする(next start も同じ環境変数を読む)。
+const port = process.env.PORT ?? '3000';
+const baseURL = `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -7,7 +13,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     // 時計・日付表示はdayjsがブラウザのローカルタイムゾーンで整形するため、
     // CI(UTC)とローカル(JST)で結果が変わらないよう明示的に固定する
@@ -22,7 +28,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run build && npm run start',
-    url: 'http://localhost:3000',
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },

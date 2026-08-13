@@ -7,6 +7,7 @@ import { useTime } from "../_contexts/TimeContext";
 import { useDisplayMode } from "../_contexts/DisplayModeContext";
 import { useMemo } from "react";
 import { Dashboard } from "../_components/Dashboard"
+import { useReloadOnNewDeploy } from "../_hooks/useReloadOnNewDeploy";
 
 function MainContent() {
   const { time } = useTime();
@@ -33,6 +34,9 @@ function MainContent() {
 }
 
 export default function Home() {
+  // キオスク表示は開いたまま操作されないため、新デプロイの反映は自前で行う
+  useReloadOnNewDeploy();
+
   return (
     <TimeProvider>
       <WeatherProvider>
