@@ -54,7 +54,7 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 
 最高/最低気温の平均から基礎スコアを出し、降水確率・天気 telop・波高/風向きの補正を加えて 0〜100 に clamp する。`MONTHLY_TEMPERATURES` は API が気温を返さないとき（当日以外の予報でよくある）のフォールバック値で、千葉の平年値。
 
-スコアは 10 刻みの閾値で `public/clothes/` の画像に対応する。**画像ファイル名が `<閾値>_<文言>.png` という形式で定数と一致している**ため、文言を変えるときは `CLOTHING_DESCRIPTIONS` とファイル名の両方を直す必要がある。
+スコアは 10 刻みの閾値で `public/clothes/<閾値>.png` の画像に対応する。文言は `CLOTHING_DESCRIPTIONS` のみで管理しており、画像ファイル名とは独立している。
 
 ### ゴミ出しスケジュール (`src/_components/Garbage.tsx`)
 
@@ -76,6 +76,7 @@ dayjs は必ずこのモジュール経由で import する。ja ロケールと
 
 ## 既知の注意点
 
+- **`public/` の画像ファイル名は ASCII のみにする**: macOS は濁点・半濁点かなを NFD(分解形)でファイルシステムに保存するため、日本語ファイル名はブラウザの NFC リクエストと一致せず、本番サーバー(`next start`)で 404 になる(dev サーバーでは正規化されて動くため気づきにくい)。
 - **next/image は最適化オフ**: ローカル配信のキオスク用途のため `next.config.ts` で `images.unoptimized: true` にしている。これにより API が返す `https://www.jma.go.jp/...` の天気アイコンも `remotePatterns` なしで表示できる。最適化を有効に戻す場合は jma.go.jp の `remotePatterns` 追加が必要。
 - **未使用の設定と依存**: `.env` の `OPEN_WEATHER_API_KEY` / `EKISPART_API_KEY` / `YAHOO_API_KEY` と `next.config.ts` の `env` 宣言は、現状 `src/` のどこからも参照されていない。`axios` も同様に未使用（fetch を直接使用）。
 - **`next.config.ts` の `env` はクライアントバンドルに埋め込まれる**。ここに実際の秘密鍵を通すと公開されるため、サーバー側でのみ使う値をここに追加してはいけない。

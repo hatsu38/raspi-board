@@ -1,16 +1,16 @@
 import { Forecast } from '../types/weather';
 
 const CLOTHING_DESCRIPTIONS = [
-  { threshold: 10, text: 'ぶるぶる、何を着ても寒い！', image: '/clothes/10_ぶるぶる、何を着ても寒い！.png' },
-  { threshold: 20, text: 'ダウンジャケットでしっかり防寒', image: '/clothes/20_ダウンジャケットでしっかり防寒.png' },
-  { threshold: 30, text: 'コートを着ないと結構寒いなあ', image: '/clothes/30_コートを着ないと結構寒いなあ.png' },
-  { threshold: 40, text: '裏地付トレンチコートがおすすめ', image: '/clothes/40_裏地付トレンチコートがおすすめ.png' },
-  { threshold: 50, text: '薄手のジャケットを羽織ろう', image: '/clothes/50_薄手のジャケットを羽織ろう.png' },
-  { threshold: 60, text: '長袖シャツ・カットソーで快適に', image: '/clothes/60_長袖シャツ・カットソーで快適に.png' },
-  { threshold: 70, text: '半袖＋カーディガンで温度調節を', image: '/clothes/70_半袖＋カーディガンで温度調節を.png' },
-  { threshold: 80, text: '半袖Tシャツ一枚で過ごせる暑さ', image: '/clothes/80_半袖Tシャツ一枚で過ごせる暑さ.png' },
-  { threshold: 90, text: 'ノースリーブでもかなり暑い！', image: '/clothes/90_ノースリーブでもかなり暑い！.png' },
-  { threshold: 100, text: '暑さ対策必須！何を着ても暑い！', image: '/clothes/100_暑さ対策必須！何を着ても暑い！.png' }
+  { threshold: 10, text: 'ぶるぶる、何を着ても寒い！', image: '/clothes/10.png' },
+  { threshold: 20, text: 'ダウンジャケットでしっかり防寒', image: '/clothes/20.png' },
+  { threshold: 30, text: 'コートを着ないと結構寒いなあ', image: '/clothes/30.png' },
+  { threshold: 40, text: '裏地付トレンチコートがおすすめ', image: '/clothes/40.png' },
+  { threshold: 50, text: '薄手のジャケットを羽織ろう', image: '/clothes/50.png' },
+  { threshold: 60, text: '長袖シャツ・カットソーで快適に', image: '/clothes/60.png' },
+  { threshold: 70, text: '半袖＋カーディガンで温度調節を', image: '/clothes/70.png' },
+  { threshold: 80, text: '半袖Tシャツ一枚で過ごせる暑さ', image: '/clothes/80.png' },
+  { threshold: 90, text: 'ノースリーブでもかなり暑い！', image: '/clothes/90.png' },
+  { threshold: 100, text: '暑さ対策必須！何を着ても暑い！', image: '/clothes/100.png' }
 ] as const;
 
 const MONTHLY_TEMPERATURES = {

@@ -15,28 +15,28 @@ const garbageSchedule: GarbageType[] = [
     name: "木の枝・草・葉",
     days: ["金"],
     weekNumber: [2, 4],
-    image: "/garbages/木の枝・草・葉.png",
+    image: "/garbages/branches-leaves.png",
   },
   {
     name: "古紙・布類",
     days: ["火"],
-    image: "/garbages/古紙・布類.png",
+    image: "/garbages/paper-cloth.png",
   },
   {
     name: "びん・缶・ペットボトル",
     days: ["月"],
-    image: "/garbages/びん・缶・ペットボトル.png",
+    image: "/garbages/bottle-can-pet.png",
   },
   {
     name: "可燃",
     days: ["水", "土"],
-    image: "/garbages/可燃.png",
+    image: "/garbages/burnable.png",
   },
   {
     name: "不燃・有害",
     days: ["金"],
     weekNumber: [1, 3],
-    image: "/garbages/不燃・有害.png",
+    image: "/garbages/non-burnable.png",
   },
 ];
 
