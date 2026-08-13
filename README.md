@@ -22,8 +22,8 @@ default（全部表示） → clock → garbage → weather → default …
 ## セットアップ
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 http://localhost:3000 を開く。
@@ -34,11 +34,11 @@ http://localhost:3000 を開く。
 
 | コマンド | 内容 |
 | --- | --- |
-| `npm run dev` | 開発サーバー（Turbopack） |
-| `npm run build` | 本番ビルド |
-| `npm run start` | 本番サーバー |
-| `npm run lint` | Lint |
-| `npm run lint:fix` | Lint（自動修正） |
+| `pnpm run dev` | 開発サーバー（Turbopack） |
+| `pnpm run build` | 本番ビルド |
+| `pnpm run start` | 本番サーバー |
+| `pnpm run lint` | Lint |
+| `pnpm run lint:fix` | Lint（自動修正） |
 
 ## カスタマイズ
 

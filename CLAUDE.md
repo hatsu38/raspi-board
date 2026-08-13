@@ -9,34 +9,37 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 ## コマンド
 
 ```bash
-npm run dev        # 開発サーバー (Turbopack, http://localhost:3000)
-npm run build      # 本番ビルド
-npm run start      # 本番サーバー
-npm run lint       # eslint .
-npm run lint:fix   # eslint . --fix
-npm run test       # Jest (ユニット・コンポーネントテスト)
-npm run test:watch # Jest watch モード
-npm run test:e2e   # Playwright E2E テスト(e2e/配下、本番ビルドに対して実行)
+pnpm install         # 依存インストール
+pnpm run dev         # 開発サーバー (Turbopack, http://localhost:3000)
+pnpm run build       # 本番ビルド
+pnpm run start       # 本番サーバー
+pnpm run lint        # eslint .
+pnpm run lint:fix    # eslint . --fix
+pnpm run test        # Jest (ユニット・コンポーネントテスト)
+pnpm run test:watch  # Jest watch モード
+pnpm run test:e2e    # Playwright E2E テスト(e2e/配下、本番ビルドに対して実行)
 ```
+
+パッケージマネージャは pnpm(`packageManager` フィールドで固定)。npm/yarn は使わない。`pnpm-lock.yaml` のみをコミットし、`package-lock.json` / `yarn.lock` は作らない。
 
 ### テスト
 
 ユニット・コンポーネントテストは Jest + React Testing Library（`next/jest` 経由でセットアップ、`jest.config.ts`）。テストファイルは対象と同じディレクトリに `*.test.ts(x)` として置く。純粋関数（`clothingScore.ts` など）を優先してテストし、日付や API レスポンスに依存するテストは `Forecast` などの最小限のモックオブジェクトを都度組み立てる（既存のモックを使い回して意図を薄めない）。
 
-E2Eテストは `@playwright/test`（`playwright.config.ts`、テストは `e2e/*.spec.ts`）。`webServer` 設定により `npm run build && npm run start` で起動した本番ビルドに対して実行する（devサーバーではなく本番相当で検証するため）。天気APIは `e2e/fixtures/weather-mock.ts` で `page.route()` により固定レスポンスを返すようモックし、外部APIの実データに依存しないようにしている。日付・時刻も `page.clock.setFixedTime()` で固定してから `page.goto()` する（`TimeContext` はマウント時に `new Date()` を読むため、`goto()` より前に固定する必要がある）。
+E2Eテストは `@playwright/test`（`playwright.config.ts`、テストは `e2e/*.spec.ts`）。`webServer` 設定により `pnpm run build && pnpm run start` で起動した本番ビルドに対して実行する（devサーバーではなく本番相当で検証するため）。天気APIは `e2e/fixtures/weather-mock.ts` で `page.route()` により固定レスポンスを返すようモックし、外部APIの実データに依存しないようにしている。日付・時刻も `page.clock.setFixedTime()` で固定してから `page.goto()` する（`TimeContext` はマウント時に `new Date()` を読むため、`goto()` より前に固定する必要がある）。
 
 **Playwright MCP(`.mcp.json`)と `@playwright/test` は別物**。前者は開発中にブラウザを対話的に操作して目視確認するためのツール、後者は自動テストスイート。動作確認の手順(下記)はMCPを、回帰テストの追加は `@playwright/test`(`e2e/`配下)を使う。
 
 ## 動作確認
 
-UI の動作確認には Playwright MCP(ルートの `.mcp.json` で定義)を使うこと。`npm run dev` で dev サーバーを起動した上で:
+UI の動作確認には Playwright MCP(ルートの `.mcp.json` で定義)を使うこと。`pnpm run dev` で dev サーバーを起動した上で:
 
 1. `browser_navigate` で `http://localhost:3000` を開く
 2. `browser_resize` で 1920x1080 にして 7 インチディスプレイ相当の表示を確認する
 3. クリックで 4 モード(default → clock → garbage → weather)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
 4. `browser_console_messages` でコンソールエラーがないことを確認する
 
-Playwright のブラウザが未インストールの場合は `npx playwright install chromium` を先に実行する。
+Playwright のブラウザが未インストールの場合は `pnpm exec playwright install chromium` を先に実行する。
 
 ## アーキテクチャ
 
