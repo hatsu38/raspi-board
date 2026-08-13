@@ -1,5 +1,6 @@
+import { render, screen } from '@testing-library/react';
 import dayjs from '../_libs/dayjsJa';
-import { getGarbageTypes, formatGarbageRule } from './Garbage';
+import { Garbage, getGarbageTypes, formatGarbageRule } from './Garbage';
 
 describe('getGarbageTypes', () => {
   it('毎週火曜日は古紙・布類の収集日になる', () => {
@@ -77,5 +78,35 @@ describe('formatGarbageRule', () => {
     expect(
       formatGarbageRule({ name: '木の枝・草・葉', days: ['金'], weekNumber: [2, 4], image: '' })
     ).toBe('金曜日・第2・4週');
+  });
+});
+
+describe('Garbage コンポーネント', () => {
+  it('渡した日付の「翌日」を明日のゴミ出しとして表示する', () => {
+    // 2026-08-17(月)を渡すと、月曜日自身の収集品目(びん・缶・ペットボトル)
+    // ではなく、翌日である火曜日の収集品目(古紙・布類)が表示されるはず
+    render(<Garbage date={dayjs('2026-08-17')} />);
+
+    expect(screen.getByText('8/18(火)')).toBeInTheDocument();
+    expect(screen.getByText('古紙・布類')).toBeInTheDocument();
+    expect(screen.queryByText('びん・缶・ペットボトル')).not.toBeInTheDocument();
+  });
+
+  it('翌日が収集日でない場合は「ゴミ出しはありません」と表示する', () => {
+    // 2026-08-19(水、可燃の収集日)を渡しても、翌日の8/20(木)は
+    // どの品目の収集日でもないため「ありません」表示になるはず
+    render(<Garbage date={dayjs('2026-08-19')} />);
+
+    expect(screen.getByText('ゴミ出しはありません')).toBeInTheDocument();
+    expect(screen.queryByText('可燃')).not.toBeInTheDocument();
+  });
+
+  it('翌日の収集品目が複数ある場合はすべて表示する', () => {
+    // 2026-08-13(木)の翌日である8/14(金)は第2金曜日にあたり、
+    // 木の枝・草・葉が収集対象になる
+    render(<Garbage date={dayjs('2026-08-13')} />);
+
+    expect(screen.getByText('木の枝・草・葉')).toBeInTheDocument();
+    expect(screen.getByText('金曜日・第2・4週')).toBeInTheDocument();
   });
 });
