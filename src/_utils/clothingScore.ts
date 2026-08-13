@@ -28,31 +28,59 @@ const MONTHLY_TEMPERATURES = {
   12: { max: 11, min: 4 }   // December
 } as const;
 
-const parseWaveHeight = (wave: string): number => {
-  const match = wave.match(/(\d+)/);
-  return match ? parseInt(match[1]) : 0;
-};
+// 人は一日の大半を最高気温に近い日中に活動するため、最高/最低の単純平均より
+// 最高気温寄りに重み付けした方が体感に近づく
+// (例: 最高30℃・最低15℃の日を単純平均22.5℃として扱うと、
+//  日中の暑さが服装の目安に反映されにくい)
+const MAX_TEMPERATURE_WEIGHT = 0.65;
+
+const getFeelsLikeTemperature = (maxCelsius: number, minCelsius: number): number =>
+  maxCelsius * MAX_TEMPERATURE_WEIGHT + minCelsius * (1 - MAX_TEMPERATURE_WEIGHT);
+
+// 気温とスコアの対応アンカー。段階的な閾値(5℃刻みで固定スコア)だと
+// 例えば21℃と24℃が同じ帯に入り同じ服装指数になってしまうため、
+// アンカー間を線形補間して1℃単位の変化にも滑らかに反応するようにする
+const TEMPERATURE_SCORE_ANCHORS: ReadonlyArray<readonly [temperature: number, score: number]> = [
+  [-5, 0],
+  [0, 10],
+  [5, 20],
+  [10, 32],
+  [15, 45],
+  [20, 58],
+  [25, 72],
+  [30, 85],
+  [35, 95],
+  [40, 100],
+];
 
 const getTemperatureScore = (temp: number): number => {
-  if (temp <= 0) return 5;
-  if (temp <= 5) return 15;
-  if (temp <= 10) return 25;
-  if (temp <= 15) return 35;
-  if (temp <= 20) return 50;
-  if (temp <= 25) return 65;
-  if (temp <= 30) return 80;
-  if (temp <= 35) return 90;
-  return 100;
+  const first = TEMPERATURE_SCORE_ANCHORS[0];
+  const last = TEMPERATURE_SCORE_ANCHORS[TEMPERATURE_SCORE_ANCHORS.length - 1];
+  if (temp <= first[0]) return first[1];
+  if (temp >= last[0]) return last[1];
+
+  for (let i = 0; i < TEMPERATURE_SCORE_ANCHORS.length - 1; i++) {
+    const [lowTemp, lowScore] = TEMPERATURE_SCORE_ANCHORS[i];
+    const [highTemp, highScore] = TEMPERATURE_SCORE_ANCHORS[i + 1];
+    if (temp <= highTemp) {
+      const ratio = (temp - lowTemp) / (highTemp - lowTemp);
+      return lowScore + (highScore - lowScore) * ratio;
+    }
+  }
+  return last[1];
 };
 
-const getRainPenalty = (chance: number): number => {
-  if (chance >= 60) return -5;
-  if (chance >= 40) return -3;
-  if (chance >= 20) return -1;
+// 外出の主な時間帯である06-12/12-18のうち、降水確率が高い方を採用する
+// (どちらか一方だけ荒れる日でも、傘や上着の要否は無視できないため)
+const getRainPenalty = (chancePercent: number): number => {
+  if (chancePercent >= 70) return -6;
+  if (chancePercent >= 50) return -4;
+  if (chancePercent >= 30) return -2;
   return 0;
 };
 
 const getWeatherPenalty = (telop: string): number => {
+  if (telop.includes('雪')) return -6;
   if (telop.includes('雨')) return -4;
   if (telop.includes('曇')) return -2;
   if (telop.includes('晴')) return 2;
@@ -65,10 +93,20 @@ const getWindPenalty = (wave: number, wind: string): number => {
   else if (wave >= 2) penalty -= 3;
   else if (wave >= 1) penalty -= 1;
 
-  if (wind.includes('北') || wind.includes('北東')) penalty -= 2;
-  if (wind.includes('強い')) penalty -= 3;
+  if (wind.includes('北')) penalty -= 2;
+  if (wind.includes('強')) penalty -= 3;
 
   return penalty;
+};
+
+const parseWaveHeight = (wave: string): number => {
+  const match = wave.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+};
+
+const parseChanceOfRain = (chance: string): number => {
+  const value = parseInt(chance);
+  return Number.isNaN(value) ? 0 : value;
 };
 
 export function calculateClothingScore(forecast: Forecast): number {
@@ -78,14 +116,19 @@ export function calculateClothingScore(forecast: Forecast): number {
 
   const maxT = Number(forecast.temperature.max?.celsius ?? defaultTemp.max);
   const minT = Number(forecast.temperature.min?.celsius ?? defaultTemp.min);
-  const avgTemp = (maxT + minT) / 2;
+  const feelsLikeTemp = getFeelsLikeTemperature(maxT, minT);
 
-  let score = getTemperatureScore(avgTemp);
-  score += getRainPenalty(parseInt(forecast.chanceOfRain.T06_12) || 0);
+  const daytimeRainChance = Math.max(
+    parseChanceOfRain(forecast.chanceOfRain.T06_12),
+    parseChanceOfRain(forecast.chanceOfRain.T12_18)
+  );
+
+  let score = getTemperatureScore(feelsLikeTemp);
+  score += getRainPenalty(daytimeRainChance);
   score += getWeatherPenalty(forecast.telop);
   score += getWindPenalty(parseWaveHeight(forecast.detail.wave), forecast.detail.wind);
 
-  return Math.max(0, Math.min(100, score));
+  return Math.round(Math.max(0, Math.min(100, score)));
 }
 
 export function getClothingDescription(score: number) {
@@ -95,4 +138,4 @@ export function getClothingDescription(score: number) {
     description: description.text,
     image: description.image
   };
-} 
+}
