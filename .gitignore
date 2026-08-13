@@ -21,6 +21,9 @@
 /.next/
 /out/
 
+# ビルドごとに scripts/generate-version.mjs が生成する
+/public/version.json
+
 # production
 /build
 
