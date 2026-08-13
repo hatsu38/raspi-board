@@ -16,11 +16,16 @@ npm run lint       # eslint .
 npm run lint:fix   # eslint . --fix
 npm run test       # Jest (ユニット・コンポーネントテスト)
 npm run test:watch # Jest watch モード
+npm run test:e2e   # Playwright E2E テスト(e2e/配下、本番ビルドに対して実行)
 ```
 
 ### テスト
 
 ユニット・コンポーネントテストは Jest + React Testing Library（`next/jest` 経由でセットアップ、`jest.config.ts`）。テストファイルは対象と同じディレクトリに `*.test.ts(x)` として置く。純粋関数（`clothingScore.ts` など）を優先してテストし、日付や API レスポンスに依存するテストは `Forecast` などの最小限のモックオブジェクトを都度組み立てる（既存のモックを使い回して意図を薄めない）。
+
+E2Eテストは `@playwright/test`（`playwright.config.ts`、テストは `e2e/*.spec.ts`）。`webServer` 設定により `npm run build && npm run start` で起動した本番ビルドに対して実行する（devサーバーではなく本番相当で検証するため）。天気APIは `e2e/fixtures/weather-mock.ts` で `page.route()` により固定レスポンスを返すようモックし、外部APIの実データに依存しないようにしている。日付・時刻も `page.clock.setFixedTime()` で固定してから `page.goto()` する（`TimeContext` はマウント時に `new Date()` を読むため、`goto()` より前に固定する必要がある）。
+
+**Playwright MCP(`.mcp.json`)と `@playwright/test` は別物**。前者は開発中にブラウザを対話的に操作して目視確認するためのツール、後者は自動テストスイート。動作確認の手順(下記)はMCPを、回帰テストの追加は `@playwright/test`(`e2e/`配下)を使う。
 
 ## 動作確認
 
