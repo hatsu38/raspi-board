@@ -55,6 +55,12 @@ export function getGarbageTypes(date: Dayjs): GarbageType[] {
   });
 }
 
+// 収集ルールの表示用文字列(例: 「金曜日・第2・4週」)
+export function formatGarbageRule(type: GarbageType): string {
+  const days = `${type.days.join('・')}曜日`;
+  return type.weekNumber ? `${days}・第${type.weekNumber.join('・')}週` : days;
+}
+
 type GarbageProps = {
   date: Dayjs;
 };
@@ -63,42 +69,40 @@ export function Garbage({ date }: GarbageProps) {
   const tomorrow = date.add(1, 'day');
   const garbageTypes = getGarbageTypes(tomorrow);
 
-  if (garbageTypes.length === 0) {
-    return (
-      <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2 text-white">明日のゴミ出し</h3>
-        <p className="text-white">ゴミ出しはありません</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="text-center">
-      <h3 className="text-lg font-semibold mb-2 text-white">明日のゴミ出し</h3>
-      <div className="flex flex-col gap-3">
-        {garbageTypes.map((type) => (
-          <div key={type.name} className="flex flex-col items-center justify-center gap-3 rounded-lg p-2 transition-colors">
-            <div className="relative w-26 h-26">
-              <Image
-                src={type.image}
-                alt={type.name}
-                fill
-                className="object-contain rounded-lg"
-              />
+    <div className="flex h-full min-h-0 flex-col items-center p-[2vh]">
+      <h3 className="fs-sm font-medium text-white/60">
+        明日のゴミ出し
+        <span className="ml-[1.5vh] text-white/40">{tomorrow.format('M/D')}({tomorrow.format('ddd')})</span>
+      </h3>
+      {garbageTypes.length === 0 ? (
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <p className="fs-lg font-medium text-white/50">ゴミ出しはありません</p>
+        </div>
+      ) : (
+        <div className="flex min-h-0 w-full flex-1 flex-col justify-center gap-[1.5vh] py-[1vh]">
+          {garbageTypes.map((type) => (
+            <div key={type.name} className="flex min-h-0 flex-1 items-center justify-center gap-[2.5vh]">
+              <div className="relative h-full max-h-[calc(15vh*var(--scale,1))] aspect-square shrink-0">
+                <Image
+                  src={type.image}
+                  alt={type.name}
+                  fill
+                  className="object-contain rounded-[1.5vh]"
+                />
+              </div>
+              <div className="flex flex-col items-start gap-[0.6vh]">
+                <span className="fs-lg font-bold leading-tight text-white">
+                  {type.name}
+                </span>
+                <span className="fs-xs rounded-full bg-white/10 px-[1.4vh] py-[0.4vh] text-white/60">
+                  {formatGarbageRule(type)}
+                </span>
+              </div>
             </div>
-            <div className="flex flex-col items-start">
-              <span className="text-lg font-semibold text-white flex items-center gap-1">
-                {type.name}
-                <span className="text-xs text-white/70">
-                (
-                  {type.days.join('・')}曜日 {type.weekNumber && `（第${type.weekNumber.join('・')}週）`}
-                )
-              </span>
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

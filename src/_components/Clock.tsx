@@ -6,11 +6,19 @@ export function Clock() {
   const { time } = useTime();
 
   return (
-    <div className="font-light font-robot flex flex-col items-center">
-      <p className="text-xl text-white">{time.format("YYYY/MM/DD")}({time.format("dd")})</p>
-      <h2 className="text-7xl tracking-tight text-white">
-        {time.format("HH:mm:ss")}
-      </h2>
+    <div className="flex flex-col items-center">
+      <p className="fs-md tracking-widest text-white/60">
+        {time.format("YYYY/MM/DD")}({time.format("ddd")})
+      </p>
+      {/* tabular-nums で数字の桁幅を固定し、秒の更新で時刻がガタつかないようにする */}
+      <div className="flex items-baseline font-mono tabular-nums tracking-tight">
+        <span className="fs-clock font-semibold leading-none text-white">
+          {time.format("HH:mm")}
+        </span>
+        <span className="fs-2xl font-medium leading-none text-white/40">
+          {time.format(":ss")}
+        </span>
+      </div>
     </div>
   );
 }

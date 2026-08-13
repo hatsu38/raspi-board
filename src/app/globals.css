@@ -1,26 +1,71 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-geist-sans), var(--font-noto-sans-jp), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 常時表示ボード用: 常にダーク表示。スクロール・オーバースクロールを禁止 */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #020617;
+}
+
+/*
+ * タッチディスプレイ対策:
+ * - user-select: none … 長押しでのテキスト選択(仮想キーボードや選択ツールバーの出現要因)を防ぐ
+ * - touch-action: manipulation … ダブルタップズームを無効化
+ * - tap-highlight … タップ時のハイライトを消す
+ */
+body {
+  color: #f8fafc;
+  font-family: var(--font-sans);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* カードの共通スタイル */
+.panel {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2vh;
+}
+
+/*
+ * ビューポート高さ(vh)基準のタイポグラフィ。
+ * 解像度やウィンドウサイズが変わっても 16:9 ディスプレイに同じ見た目でフィットする。
+ * 全画面モードでは親要素の --scale で一括拡大する。
+ */
+.fs-2xs {
+  font-size: calc(1.5vh * var(--scale, 1));
+}
+.fs-xs {
+  font-size: calc(1.8vh * var(--scale, 1));
+}
+.fs-sm {
+  font-size: calc(2.2vh * var(--scale, 1));
+}
+.fs-md {
+  font-size: calc(2.7vh * var(--scale, 1));
+}
+.fs-lg {
+  font-size: calc(3.4vh * var(--scale, 1));
+}
+.fs-xl {
+  font-size: calc(4.4vh * var(--scale, 1));
+}
+.fs-2xl {
+  font-size: calc(5.6vh * var(--scale, 1));
+}
+.fs-clock {
+  font-size: calc(12.5vh * var(--scale, 1));
 }
