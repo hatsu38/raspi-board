@@ -16,6 +16,7 @@ export function TimeProvider({ children }: { children: ReactNode }) {
   const [time, setTime] = useState<Dayjs | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSRとの時刻ズレ回避のため、初回時刻は意図的にマウント後へ遅延している
     setTime(DayJs());
     const timer = setInterval(() => {
       setTime(DayJs());
