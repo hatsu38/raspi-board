@@ -28,7 +28,7 @@ const RAIN_SLOTS = [
 
 type TemperatureProps = {
   label: string;
-  celsius?: string;
+  celsius?: string | null;
   className: string;
 };
 
