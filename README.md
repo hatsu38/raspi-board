@@ -68,6 +68,56 @@ http://localhost:3000 を開く。
 
 アイコンは `public/garbages/` に置き、`image` にパスを指定する。
 
+## Raspberry Pi 実機でのキオスク自動起動設定
+
+タッチディスプレイでのURL手入力は誤操作しやすいため、電源投入だけでこのアプリが全画面表示されるようにしておく。Raspberry Pi OS Bookworm（Wayland/labwc構成）を前提とする。
+
+### 前提条件
+
+- `raspi-config` で自動ログインを有効化済み（電源投入でデスクトップセッションが自動的に開始する状態）
+- Chromiumがインストール済み（Raspberry Pi OS標準でプリインストール）
+
+### 1. SSHでリモート設定できるようにする
+
+`raspi-config` の `Interface Options > SSH` で有効化する。作業用マシンの公開鍵を登録しておくと、以降の作業はパスワード入力なしでリモートから行える。
+
+```bash
+ssh-copy-id <ユーザー名>@<Piのホスト名>.local
+```
+
+### 2. キオスク自動起動スクリプトを作成
+
+Pi上（SSH経由でも可）で以下を実行する。
+
+```bash
+mkdir -p ~/.config/labwc
+cat > ~/.config/labwc/autostart << 'EOF'
+#!/bin/sh
+chromium --noerrdialogs --disable-infobars --kiosk --incognito \
+  --disable-session-crashed-bubble --disable-translate \
+  --check-for-update-interval=31536000 \
+  --app=<デプロイ先のURL> &
+EOF
+chmod +x ~/.config/labwc/autostart
+```
+
+`labwc`（Bookwormのデフォルトコンポジタ）はセッション開始時にこのスクリプトを自動実行する。再起動すればURLを一切入力せずにアプリが全画面表示される。
+
+### 3. 動作確認
+
+```bash
+sudo reboot
+```
+
+再起動後、アドレスバーなしで対象URLが全画面表示されればOK。
+
+### セキュリティに関する注意
+
+- **SSHはパスワード認証をオフにする**: 鍵認証の登録が済んだら `/etc/ssh/sshd_config` の `PasswordAuthentication` を `no` にし、`sudo systemctl restart ssh` で反映する。総当たり攻撃のリスクを減らせる
+- **SSHをインターネットに公開しない**: ポート22をルーターで外部に公開（ポート開放）しない。外出先からのメンテナンスが必要な場合はVPN（Tailscaleなど）経由にする
+- **キオスクは `--incognito` で起動する**: Cookie・閲覧履歴を残さないため、常時表示の共有ディスプレイに個人情報が残らない
+- **ホスト名・IPアドレス・ユーザー名などの固有情報をリポジトリに書かない**: 上記コマンド例のプレースホルダーは実際の値に置き換えず、実値は手元のメモなどGit管理外の場所で管理する
+
 ## 技術スタック
 
 Next.js 15 (App Router) / React 19 / TypeScript / Tailwind CSS v4 / Day.js
