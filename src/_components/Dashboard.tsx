@@ -24,11 +24,16 @@ function ClothingIndexCard() {
       <h3 className="fs-sm font-medium text-white/60">今日の服装指数</h3>
       {clothingIndex ? (
         <>
-          <div className="relative my-[1.5vh] w-full min-h-0 flex-1">
+          {/* aspect-square で幅から高さを決めることで、flex-1 の高さ確定を待たずに
+              next/image の fill が高さ0と誤認する警告を避ける */}
+          <div className="relative my-[1.5vh] aspect-square w-[65%] max-h-full">
             <Image
               src={clothingIndex.image}
               alt={clothingIndex.description}
               fill
+              // 常時表示画面でファーストビューに写る画像のため、
+              // LCP候補として優先読み込みする
+              priority
               className="object-contain rounded-[1.5vh]"
             />
           </div>
