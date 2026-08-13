@@ -10,22 +10,22 @@
  * (--color-ink)にしている。
  */
 :root {
-  --base: #fbf3e3;
+  --base: #f5e0b8;
   --surface: #fffcf5;
-  --surface-today: #fff8ea;
-  --line: #ebdfc7;
+  --surface-today: #fff9ec;
+  --line: #dac397;
 
   --ink: #4a3728;
-  --ink-soft: #93765b;
-  --ink-faint: #b6a188;
+  --ink-soft: #7b624c;
+  --ink-faint: #897154;
 
-  --accent: #e08a5b;
-  --on-accent: #ffffff;
-  --accent-soft: rgba(224, 138, 91, 0.16);
-  --accent-ink: #b4623a;
+  --accent: #ce6227;
+  --on-accent: #1f1711;
+  --accent-soft: rgba(206, 98, 39, 0.16);
+  --accent-ink: #af5f38;
 
-  --hot: #d2624b;
-  --cold: #5e9bc0;
+  --hot: #c84c32;
+  --cold: #3f7ba0;
   --sun: #f0b54e;
   --cloud: #c9bca6;
 
@@ -37,12 +37,12 @@
   --bar-track: rgba(122, 90, 58, 0.12);
 
   /* 背景のほのかな光。左上に朝日、右下に若草 */
-  --glow-warm: rgba(224, 138, 91, 0.13);
+  --glow-warm: rgba(206, 98, 39, 0.13);
   --glow-leaf: rgba(124, 158, 88, 0.1);
 
   --card-radius: calc(2.2vh * var(--scale, 1));
   --card-shadow: 0 0.5vh 1.4vh rgba(122, 90, 58, 0.12);
-  --card-shadow-today: 0 0.5vh 1.6vh rgba(224, 138, 91, 0.22);
+  --card-shadow-today: 0 0.5vh 1.6vh rgba(206, 98, 39, 0.22);
 }
 
 /*
@@ -52,13 +52,13 @@
  */
 [data-theme="night"] {
   --base: #221a14;
-  --surface: #2e241b;
+  --surface: #372b20;
   --surface-today: #382a1e;
-  --line: #453528;
+  --line: #534030;
 
   --ink: #f0e4d2;
   --ink-soft: #bca88e;
-  --ink-faint: #8a7660;
+  --ink-faint: #a4917c;
 
   --accent: #c97a52;
   --on-accent: #221a14;
