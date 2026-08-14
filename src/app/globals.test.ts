@@ -3,14 +3,20 @@ import { join } from 'node:path';
 import { contrastRatio, lightnessDifference } from '../_utils/color';
 
 /*
- * globals.css の配色トークンが、実機の 7 インチパネルで破綻しないことを検証する。
+ * globals.css が実機の 7 インチパネルで破綻しないことを検証する。
+ *
+ * 配色と文字サイズの 2 つを見ている。どちらも「開発機の MacBook Pro では
+ * 何の問題もなく見えるのに実機で破綻する」種類の制約で、目視では気づけない。
+ * だから閾値をテストで固定する。
+ */
+
+/*
+ * 配色。
  *
  * 経緯: 暖色クリーム配色にしたとき、カード面(#fffcf5)と地(#fbf3e3)の明度差が
  * ΔL* = 3.0 しかなく、MacBook Pro では綺麗に見えるのに実機ではカードの境界が
  * すべて消えて「白一色」に見えた。安価なパネルは 6bit + ディザリングで、
  * 白に近い領域の階調から先に潰れるため。
- *
- * 目視では気づけない種類の破綻なので、閾値をテストで固定する。
  */
 
 // 面と面が分離して見えるのに必要な明度差。
@@ -101,5 +107,66 @@ describe.each([
         MIN_TEXT_CONTRAST
       );
     });
+  });
+});
+
+/*
+ * 文字サイズ。
+ *
+ * 経緯: 「視認距離 1m には 5.7vh 以上」と README に基準を書きながら、実際の
+ * .fs-* スケールは時計以外すべてその下にあり、玄関から読めない状態が続いていた。
+ *
+ * さらに 5.7vh という数字自体が「font-size = 文字高」という前提で出したもので、
+ * 実際の字面は em を埋めきらない。下の INK_RATIO は Zen Maru Gothic Bold で
+ * 実測した比率で、数字は em の 7 割しかない。同じ font-size でも数字は和文より
+ * 小さく見えるため、気温は天気 telop より大きい font-size を要求する。
+ */
+
+// EVICIV 7 インチ(16:9, 1080px)の画面高 87.2mm から算出した 1vh の物理サイズ
+const VH_IN_MM = 0.872;
+
+// 視認距離 1m で快適に読める文字高(掲示物の経験則: 文字高 mm × 200 ≒ 視認距離 mm)
+const MIN_INK_HEIGHT_MM = 5;
+
+// font-size に対する実インクの高さの比(Zen Maru Gothic Bold で実測)
+const INK_RATIO = {
+  kanji: 0.885,
+  digit: 0.721,
+} as const;
+
+/*
+ * 遠距離(1m)から読む層。ここに挙げたクラスだけが 5mm 基準の対象で、
+ * 日付・降水確率・服装の文言などは「近づいて読む」前提なのでサイズを問わない。
+ * 遠くから読ませたい情報を増やすときは、このリストに足してから CSS を書く。
+ */
+const DISTANCE_READABLE = [
+  { className: 'fs-clock', script: 'digit', usage: '時刻' },
+  { className: 'fs-today-telop', script: 'kanji', usage: '今日の天気' },
+  { className: 'fs-today-temp', script: 'digit', usage: '今日の気温' },
+] as const;
+
+function readFontSizes(): Record<string, number> {
+  const css = readFileSync(join(__dirname, 'globals.css'), 'utf8');
+
+  const sizes: Record<string, number> = {};
+  for (const [, name, body] of css.matchAll(/\.([\w-]+)\s*\{([^}]*)\}/g)) {
+    const fontSize = body.match(/font-size:\s*calc\(([\d.]+)vh/);
+    if (fontSize) {
+      sizes[name] = Number(fontSize[1]);
+    }
+  }
+  return sizes;
+}
+
+describe('遠距離(1m)からの可読性', () => {
+  const fontSize = readFontSizes();
+
+  it.each(DISTANCE_READABLE)('$usage(.$className)が 1m から読める', ({ className, script }) => {
+    const vh = fontSize[className];
+    if (vh === undefined) {
+      throw new Error(`globals.css に .${className} の font-size 定義が見つかりません`);
+    }
+
+    expect(vh * INK_RATIO[script] * VH_IN_MM).toBeGreaterThanOrEqual(MIN_INK_HEIGHT_MM);
   });
 });

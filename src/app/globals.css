@@ -215,6 +215,21 @@ img {
 .fs-2xl {
   font-size: calc(5.6vh * var(--scale, 1));
 }
+
+/*
+ * 遠距離(1m)から読む層。上の .fs-* が「近づいて読む」情報のためのスケールなのに対し、
+ * ここは通りがかりに数秒で読み取る情報だけに使う。globals.test.ts が
+ * 実インク 5mm 以上であることを検証しているので、値を下げるとテストが落ちる。
+ *
+ * 数字は字面が em の 7 割しか埋めないため、和文と同じ大きさに見せるには
+ * 大きい font-size が要る(気温 8vh 対 天気 6.5vh)。
+ */
+.fs-today-telop {
+  font-size: calc(6.5vh * var(--scale, 1));
+}
+.fs-today-temp {
+  font-size: calc(8vh * var(--scale, 1));
+}
 .fs-clock {
   font-size: calc(12.5vh * var(--scale, 1));
 }
