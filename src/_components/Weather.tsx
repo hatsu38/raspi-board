@@ -31,15 +31,25 @@ type TemperatureProps = {
   label: string;
   celsius?: string | null;
   className: string;
+  isToday: boolean;
 };
 
-const Temperature = ({ label, celsius, className }: TemperatureProps) => (
+/*
+ * 今日の気温だけ、1m 先から読める大きさ(.fs-today-temp)にする。
+ * 「最高」「最低」のラベルは近づかないと読めない大きさのままだが、
+ * 遠目には赤と青の色で最高・最低を見分けられるため基準の対象にしていない。
+ */
+const Temperature = ({ label, celsius, className, isToday }: TemperatureProps) => (
   <div className="flex flex-col items-center">
     <span className="fs-xs font-medium text-ink-soft">{label}</span>
-    <span className={`fs-xl font-bold leading-tight ${celsius ? className : 'text-ink-faint'}`}>
+    <span
+      className={`${isToday ? 'fs-today-temp' : 'fs-xl'} font-bold leading-tight ${
+        celsius ? className : 'text-ink-faint'
+      }`}
+    >
       {celsius ?? '--'}
       {/* ° と C を並べると丸ゴシックでは字間が開いて見えるため合成済みの1文字を使う */}
-      <span className="fs-sm font-bold">℃</span>
+      <span className={`${isToday ? 'fs-xl' : 'fs-sm'} font-bold`}>℃</span>
     </span>
   </div>
 );
@@ -120,14 +130,28 @@ const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) =>
         <div className="relative h-[calc(8.5vh*var(--scale,1))] w-[calc(8.5vh*var(--scale,1))]">
           <WeatherIcon telop={forecast.telop} fallbackUrl={forecast.image?.url} />
         </div>
-        <h3 className="fs-lg font-bold text-ink">{forecast.telop}</h3>
+        <h3
+          className={`${isToday ? 'fs-today-telop' : 'fs-lg'} font-bold leading-tight text-ink`}
+        >
+          {forecast.telop}
+        </h3>
       </div>
 
       {/* 最高・最低気温 */}
       <div className="flex items-center gap-[4vh]">
-        <Temperature label="最高" celsius={forecast.temperature.max?.celsius} className="text-hot" />
+        <Temperature
+          label="最高"
+          celsius={forecast.temperature.max?.celsius}
+          className="text-hot"
+          isToday={isToday}
+        />
         <div className="h-[calc(5vh*var(--scale,1))] w-px bg-line" />
-        <Temperature label="最低" celsius={forecast.temperature.min?.celsius} className="text-cold" />
+        <Temperature
+          label="最低"
+          celsius={forecast.temperature.min?.celsius}
+          className="text-cold"
+          isToday={isToday}
+        />
       </div>
 
       {/* 降水確率 */}
@@ -169,7 +193,8 @@ export function Weather({ dates }: WeatherProps) {
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-3 gap-[2.5vh]">
+    // 今日のカードだけ広くする。大きくした天気 telop と気温を折り返さずに収めるため
+    <div className="grid h-full min-h-0 grid-cols-[1.5fr_1fr_1fr] gap-[2.5vh]">
       {weather.forecasts.slice(0, 3).map((forecast, index) => (
         <WeatherCard
           key={forecast.date}

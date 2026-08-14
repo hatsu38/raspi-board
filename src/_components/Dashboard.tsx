@@ -98,7 +98,9 @@ export function Dashboard({ dates }: DashboardProps) {
         );
       default:
         return (
-          <div className="grid h-full grid-rows-[5fr_7fr] gap-[2.5vh] p-[2.5vh] pb-[3.5vh]">
+          /* 下段が厚いのは、今日の天気と気温を 1m 先から読める大きさで置くため。
+             減った上段の分は服装・ゴミのイラストが縮んで吸収する(時計は影響を受けない) */
+          <div className="grid h-full grid-rows-[5fr_8fr] gap-[2.5vh] p-[2.5vh] pb-[3.5vh]">
             <div className="grid min-h-0 grid-cols-[1.2fr_1fr_1fr] gap-[2.5vh]">
               <section className="panel flex items-center justify-center">
                 <Clock />
