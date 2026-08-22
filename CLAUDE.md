@@ -81,7 +81,9 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 
 ### データソース
 
-天気は `https://weather.tsukumijima.net/api/forecast/city/120010`（千葉市、API キー不要）。都市を変える場合は `WeatherContext.tsx` の `CHIBA_CITY_ID` を変更する。
+天気(今日・明日・明後日の概要、defaultモード下段と`Weather.tsx`)は `https://weather.tsukumijima.net/api/forecast/city/120010`（千葉市、API キー不要）。都市を変える場合は `WeatherContext.tsx` の `CHIBA_CITY_ID` を変更する。
+
+`weather`モード(全画面、`WeatherDetail.tsx`)の時間帯別データは [Open-Meteo](https://api.open-meteo.com/v1/forecast) から取得する。こちらもAPIキー不要だが、都市の指定が緯度経度(`HourlyWeatherContext.tsx` の `CHIBA_LATITUDE` / `CHIBA_LONGITUDE`)である点がtsukumijimaの `CHIBA_CITY_ID` と異なる。都市を変える場合は両方の変更が必要。
 
 ### 服装指数 (`src/_utils/clothingScore.ts`)
 
