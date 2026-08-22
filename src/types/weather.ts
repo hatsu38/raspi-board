@@ -64,4 +64,11 @@ export type ClothingIndex = {
   index: number;
   description: string;
   image: string;
-}; 
+};
+
+export type HourlyForecast = {
+  time: string; // ISO8601 (Asia/Tokyo, 例: "2026-08-23T09:00")
+  temperature: number;
+  precipitationProbability: number;
+  weatherCode: number; // WMO weather code
+};
