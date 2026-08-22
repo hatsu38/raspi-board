@@ -47,18 +47,19 @@ Playwright のブラウザが未インストールの場合は `pnpm exec playwr
 
 全コンポーネントが `'use client'`。サーバーコンポーネント/Route Handler/API Routes は一切使っていない。データ取得はすべてブラウザ側の `fetch` で行う。
 
-`src/app/page.tsx` が 3 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
+`src/app/page.tsx` が 4 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
 
 ```
-TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Dashboard
+TimeProvider → WeatherProvider → HourlyWeatherProvider → DisplayModeProvider → MainContent → Dashboard
 ```
 
-### 3 つの Context (`src/_contexts/`)
+### 4 つの Context (`src/_contexts/`)
 
 | Context | 責務 |
 | --- | --- |
 | `TimeContext` | 1 秒ごとに `dayjs()` を更新して配信。時計表示と全日付計算の起点 |
 | `WeatherContext` | 5 分ごとに天気 API を fetch。取得と同時に服装指数も計算して保持 |
+| `HourlyWeatherContext` | 5 分ごとに Open-Meteo を fetch し、`weather`モード(`WeatherDetail.tsx`)用の時間帯別データを保持 |
 | `DisplayModeContext` | 表示モードを `default → clock → garbage → weather` の順に巡回 |
 
 モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
