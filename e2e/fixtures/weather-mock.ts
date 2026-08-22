@@ -80,3 +80,39 @@ export const WEATHER_MOCK = {
     ],
   },
 };
+
+// HourlyWeatherContext.tsx が実際にfetchするエンドポイント。
+export const OPEN_METEO_API_URL_PATTERN = '**/v1/forecast**';
+
+// WEATHER_MOCK と同じ3日分(2026-08-13/14/15)の1時間ごとのデータを
+// その場で組み立てる。各日の気温は WEATHER_MOCK の最高気温に寄せ、
+// 正午をピークにした山型にする。降水確率と天気コードは
+// telop(晴れ/曇時々雨/曇り)に対応させている。
+const HOURLY_DAYS = ['2026-08-13', '2026-08-14', '2026-08-15'];
+const HOURLY_PEAK_TEMPERATURE_BY_DAY = [25, 29, 28];
+const HOURLY_PRECIPITATION_PROBABILITY_BY_DAY = [10, 60, 30];
+const HOURLY_WEATHERCODE_BY_DAY = [0, 61, 3];
+
+const OPEN_METEO_TIMES: string[] = [];
+const OPEN_METEO_TEMPERATURES: number[] = [];
+const OPEN_METEO_PRECIPITATION_PROBABILITIES: number[] = [];
+const OPEN_METEO_WEATHERCODES: number[] = [];
+
+HOURLY_DAYS.forEach((day, dayIndex) => {
+  for (let hour = 0; hour < 24; hour++) {
+    const distanceFromNoon = Math.abs(hour - 12);
+    OPEN_METEO_TIMES.push(`${day}T${String(hour).padStart(2, '0')}:00`);
+    OPEN_METEO_TEMPERATURES.push(HOURLY_PEAK_TEMPERATURE_BY_DAY[dayIndex] - distanceFromNoon * 0.3);
+    OPEN_METEO_PRECIPITATION_PROBABILITIES.push(HOURLY_PRECIPITATION_PROBABILITY_BY_DAY[dayIndex]);
+    OPEN_METEO_WEATHERCODES.push(HOURLY_WEATHERCODE_BY_DAY[dayIndex]);
+  }
+});
+
+export const OPEN_METEO_MOCK = {
+  hourly: {
+    time: OPEN_METEO_TIMES,
+    temperature_2m: OPEN_METEO_TEMPERATURES,
+    precipitation_probability: OPEN_METEO_PRECIPITATION_PROBABILITIES,
+    weathercode: OPEN_METEO_WEATHERCODES,
+  },
+};
