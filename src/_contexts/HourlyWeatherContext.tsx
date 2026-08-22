@@ -8,7 +8,7 @@ const CHIBA_LONGITUDE = 140.1063;
 const OPEN_METEO_PARAMS = new URLSearchParams({
   latitude: String(CHIBA_LATITUDE),
   longitude: String(CHIBA_LONGITUDE),
-  hourly: 'temperature_2m,precipitation_probability,weathercode',
+  hourly: 'temperature_2m,precipitation_probability,weather_code',
   timezone: 'Asia/Tokyo',
   forecast_days: '3',
 });
@@ -20,7 +20,7 @@ type OpenMeteoResponse = {
     time: string[];
     temperature_2m: number[];
     precipitation_probability: number[];
-    weathercode: number[];
+    weather_code: number[];
   };
 };
 
@@ -29,7 +29,7 @@ function toHourlyForecasts(data: OpenMeteoResponse): HourlyForecast[] {
     time,
     temperature: data.hourly.temperature_2m[index],
     precipitationProbability: data.hourly.precipitation_probability[index],
-    weatherCode: data.hourly.weathercode[index],
+    weatherCode: data.hourly.weather_code[index],
   }));
 }
 

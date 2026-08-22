@@ -75,4 +75,21 @@ describe('WeatherDetail', () => {
     expect(screen.getByText('5%')).toBeInTheDocument();
     expect(screen.getByText('0%')).toBeInTheDocument();
   });
+
+  it('気温をラベルとして表示する(全時間帯が同じ気温でも表示される)', () => {
+    const hourly: HourlyForecast[] = [
+      createHourlyForecast({ time: '2026-08-23T00:00', temperature: 24 }),
+      createHourlyForecast({ time: '2026-08-23T03:00', temperature: 24 }),
+      createHourlyForecast({ time: '2026-08-24T00:00', temperature: 30.6 }),
+      createHourlyForecast({ time: '2026-08-25T00:00', temperature: 20 }),
+    ];
+    mockUseHourlyWeather.mockReturnValue({ hourlyForecast: hourly, loading: false, error: null });
+
+    render(<WeatherDetail dates={dates} />);
+
+    // 今日は2時間帯とも24℃固定(気温がすべて同じ = 折れ線の正規化でrange===0になる分岐)
+    expect(screen.getAllByText('24°').length).toBeGreaterThan(0);
+    // 小数の気温は四捨五入して表示する
+    expect(screen.getByText('31°')).toBeInTheDocument();
+  });
 });

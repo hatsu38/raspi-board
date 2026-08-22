@@ -113,6 +113,6 @@ export const OPEN_METEO_MOCK = {
     time: OPEN_METEO_TIMES,
     temperature_2m: OPEN_METEO_TEMPERATURES,
     precipitation_probability: OPEN_METEO_PRECIPITATION_PROBABILITIES,
-    weathercode: OPEN_METEO_WEATHERCODES,
+    weather_code: OPEN_METEO_WEATHERCODES,
   },
 };

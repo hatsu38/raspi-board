@@ -7,10 +7,16 @@ type TemperatureGraphProps = {
 const VIEW_WIDTH = 400;
 const VIEW_HEIGHT = 60;
 const PADDING_Y = 8;
+const MIN_LABEL_TOP_PERCENT = (PADDING_Y / VIEW_HEIGHT) * 100;
 
 /*
  * 気温配列を折れ線で描く。日ごとの最高/最低で正規化するため、
  * 日によって気温の絶対値は違っても線の高さの起伏は常にフルスケールで見える。
+ *
+ * 数値ラベルはSVG内テキストではなくHTML要素(.fs-2xs)を重ねて配置する。
+ * viewBoxをpreserveAspectRatio="none"で非均等に(x/yで別倍率)引き伸ばすため、
+ * SVG内にテキストを置くと段(今日/明日/明後日)ごとに高さが変わって読みにくくなるため。
+ * 折れ線自体はvector-effectで線の太さだけ画面上一定に保つ。
  */
 export function TemperatureGraph({ temperatures }: TemperatureGraphProps) {
   if (temperatures.length === 0) return null;
@@ -20,34 +26,45 @@ export function TemperatureGraph({ temperatures }: TemperatureGraphProps) {
   const range = max - min;
 
   const points = temperatures.map((temp, index) => {
-    const x = ((index + 0.5) / temperatures.length) * VIEW_WIDTH;
+    const xPercent = ((index + 0.5) / temperatures.length) * 100;
     const ratio = range === 0 ? 0.5 : (temp - min) / range;
-    const y = VIEW_HEIGHT - PADDING_Y - ratio * (VIEW_HEIGHT - PADDING_Y * 2);
-    return { x, y, temp };
+    const yPercent =
+      ((VIEW_HEIGHT - PADDING_Y - ratio * (VIEW_HEIGHT - PADDING_Y * 2)) / VIEW_HEIGHT) * 100;
+    return { xPercent, yPercent, temp };
   });
 
-  const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
+  const polylinePoints = points
+    .map((p) => `${(p.xPercent / 100) * VIEW_WIDTH},${(p.yPercent / 100) * VIEW_HEIGHT}`)
+    .join(' ');
 
   return (
-    <svg
-      viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-      preserveAspectRatio="none"
-      className="h-full w-full"
-    >
-      <polyline points={polylinePoints} fill="none" stroke="var(--hot)" strokeWidth="2" />
+    <div className="relative h-full w-full">
+      <svg
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+        preserveAspectRatio="none"
+        className="h-full w-full"
+      >
+        <polyline
+          points={polylinePoints}
+          fill="none"
+          stroke="var(--hot)"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
       {points.map((p, index) => (
-        <text
+        <span
           key={index}
-          x={p.x}
-          y={Math.max(p.y - 4, 8)}
-          textAnchor="middle"
-          fontSize="9"
-          fill="var(--hot)"
-          fontWeight="700"
+          className="fs-2xs absolute font-bold text-hot"
+          style={{
+            left: `${p.xPercent}%`,
+            top: `${Math.max(p.yPercent, MIN_LABEL_TOP_PERCENT)}%`,
+            transform: 'translate(-50%, -120%)',
+          }}
         >
           {Math.round(p.temp)}°
-        </text>
+        </span>
       ))}
-    </svg>
+    </div>
   );
 }
