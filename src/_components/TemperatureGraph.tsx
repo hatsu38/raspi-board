@@ -7,7 +7,11 @@ type TemperatureGraphProps = {
 const VIEW_WIDTH = 400;
 const VIEW_HEIGHT = 60;
 const PADDING_Y = 8;
-const MIN_LABEL_TOP_PERCENT = (PADDING_Y / VIEW_HEIGHT) * 100;
+// ラベルは transform: translateY(-120%) で自身の高さの1.2倍上へ浮かせるため、
+// 上端からの最小距離はコンテナ高さの%ではなくラベル自身のフォントサイズ(em)基準で
+// 確保する。%基準にすると、明日/明後日のように行の高さが低い段ではラベルが
+// 天気アイコン行にはみ出してしまう(コンテナ高さが変わってもtranslateの量は変わらないため)。
+const MIN_LABEL_TOP = '1.8em';
 
 /*
  * 気温配列を折れ線で描く。日ごとの最高/最低で正規化するため、
@@ -58,7 +62,7 @@ export function TemperatureGraph({ temperatures }: TemperatureGraphProps) {
           className="fs-2xs absolute font-bold text-hot"
           style={{
             left: `${p.xPercent}%`,
-            top: `${Math.max(p.yPercent, MIN_LABEL_TOP_PERCENT)}%`,
+            top: `max(${p.yPercent}%, ${MIN_LABEL_TOP})`,
             transform: 'translate(-50%, -120%)',
           }}
         >
