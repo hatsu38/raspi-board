@@ -5,7 +5,7 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 ## 表示内容
 
 - **時計** — 日付・曜日・時刻（1 秒ごとに更新）
-- **天気予報** — 今日から 3 日分の天気・最高/最低気温・時間帯別の降水確率（5 分ごとに更新）
+- **天気予報** — 今日から 3 日分の天気・最高/最低気温・時間帯別の降水確率（5 分ごとに更新）。`weather` モードでは今日・明日・明後日を 3 時間おきの気温・降水確率で表示する
 - **服装指数** — 気温・天気・降水確率・風から算出したその日の服装の目安をイラストで表示
 - **ゴミ出し** — 明日出すゴミの種類。天気カードにも各日の収集予定を併記
 
@@ -17,7 +17,7 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 default（全部表示） → clock → garbage → weather → default …
 ```
 
-`default` 以外は該当カードを 1 枚だけ拡大して全画面表示する。離れた場所から見るときに使う。
+`default` 以外は該当カードを 1 枚だけ拡大して全画面表示する。`clock` `garbage` は離れた場所から見るときに使う。`weather` は 3 時間おきの時間帯別詳細を表示するため、近づいて見る想定。
 
 ## 表示ハードウェア
 
@@ -69,7 +69,7 @@ pnpm run dev
 
 http://localhost:3000 を開く。
 
-天気の取得には [天気予報 API（livedoor 天気互換）](https://weather.tsukumijima.net/) を使っており **API キーは不要**。環境変数の設定なしでそのまま動作する。
+天気の取得には [天気予報 API（livedoor 天気互換）](https://weather.tsukumijima.net/)（今日・明日・明後日の概要）と [Open-Meteo](https://api.open-meteo.com/)（`weather` モードの時間帯別詳細）の 2 つを使っており、どちらも **API キーは不要**。環境変数の設定なしでそのまま動作する。
 
 ## コマンド
 
@@ -86,6 +86,8 @@ http://localhost:3000 を開く。
 ### 地域を変える
 
 `src/_contexts/WeatherContext.tsx` の `CHIBA_CITY_ID` を対象地域の city ID に変更する。ID は[天気予報 API の対応都市一覧](https://weather.tsukumijima.net/primary_area.xml)から調べられる。
+
+`weather` モードの時間帯別データは緯度経度で指定しているため、`src/_contexts/HourlyWeatherContext.tsx` の `CHIBA_LATITUDE` / `CHIBA_LONGITUDE` も対象地域の緯度経度に変更する。
 
 服装指数のフォールバック用平年気温も千葉基準なので、地域を大きく変える場合は `src/_utils/clothingScore.ts` の `MONTHLY_TEMPERATURES` もあわせて調整する。
 

@@ -1,12 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import { getWeatherIconKind, type WeatherIconKind } from '../_utils/weatherIcon';
+import type { WeatherIconKind } from '../_utils/weatherIcon';
 
 type WeatherIconProps = {
-  telop: string;
-  /** telop から種類を判定できなかったときに表示する天気 API の公式アイコン */
+  kind: WeatherIconKind | null;
+  /** kind が判定できなかったときに表示する天気 API の公式アイコン */
   fallbackUrl?: string;
+  /** aria-label と、fallback画像のaltに使うラベル */
+  label: string;
 };
 
 // 雲のシルエット。雨・雪・雷では下に余白を作るため上へずらして使う
@@ -89,16 +91,14 @@ const ICONS: Record<WeatherIconKind, React.ReactNode> = {
   ),
 };
 
-export function WeatherIcon({ telop, fallbackUrl }: WeatherIconProps) {
-  const kind = getWeatherIconKind(telop);
-
+export function WeatherIcon({ kind, fallbackUrl, label }: WeatherIconProps) {
   if (!kind) {
     if (!fallbackUrl) return null;
-    return <Image src={fallbackUrl} alt={telop} fill className="object-contain" />;
+    return <Image src={fallbackUrl} alt={label} fill className="object-contain" />;
   }
 
   return (
-    <svg viewBox="0 0 32 32" role="img" aria-label={telop} className="h-full w-full">
+    <svg viewBox="0 0 32 32" role="img" aria-label={label} className="h-full w-full">
       {ICONS[kind]}
     </svg>
   );

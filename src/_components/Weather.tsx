@@ -6,6 +6,7 @@ import { Dayjs } from "dayjs";
 import type { Forecast } from "../types/weather";
 import { getGarbageTypes } from "./Garbage";
 import { WeatherIcon } from "./WeatherIcon";
+import { getWeatherIconKind } from "../_utils/weatherIcon";
 
 type WeatherProps = {
   dates: Dayjs[];
@@ -128,7 +129,11 @@ const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) =>
       {/* 天気アイコンと天気 */}
       <div className="flex flex-col items-center gap-[0.5vh]">
         <div className="relative h-[calc(8.5vh*var(--scale,1))] w-[calc(8.5vh*var(--scale,1))]">
-          <WeatherIcon telop={forecast.telop} fallbackUrl={forecast.image?.url} />
+          <WeatherIcon
+            kind={getWeatherIconKind(forecast.telop)}
+            fallbackUrl={forecast.image?.url}
+            label={forecast.telop}
+          />
         </div>
         <h3
           className={`${isToday ? 'fs-today-telop' : 'fs-lg'} font-bold leading-tight text-ink`}

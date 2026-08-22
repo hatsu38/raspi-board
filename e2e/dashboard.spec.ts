@@ -1,8 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { WEATHER_API_URL_PATTERN, WEATHER_MOCK } from './fixtures/weather-mock';
+import {
+  WEATHER_API_URL_PATTERN,
+  WEATHER_MOCK,
+  OPEN_METEO_API_URL_PATTERN,
+  OPEN_METEO_MOCK,
+} from './fixtures/weather-mock';
 
 test.beforeEach(async ({ page }) => {
   await page.route(WEATHER_API_URL_PATTERN, (route) => route.fulfill({ json: WEATHER_MOCK }));
+  await page.route(OPEN_METEO_API_URL_PATTERN, (route) => route.fulfill({ json: OPEN_METEO_MOCK }));
 
   // TimeContextはマウント直後にnew Date()で時刻を確定するため、
   // goto()より前に固定時刻をセットしておく必要がある。
@@ -58,11 +64,13 @@ test.describe('モード切り替え', () => {
     await expect(page.getByText('きょうの服装')).not.toBeVisible();
 
     await advanceMode();
-    // weather: 服装指数・ゴミ出しの見出しは消え、3日分の天気が全画面表示される
+    // weather: 服装指数・ゴミ出しの見出しは消え、3日分の時間帯別天気が全画面表示される
     await expect(page.getByText('きょうの服装')).not.toBeVisible();
     await expect(page.getByText('あすのゴミ')).not.toBeVisible();
     await expect(page.getByText('今日', { exact: true })).toBeVisible();
     await expect(page.getByText('明後日', { exact: true })).toBeVisible();
+    // Open-Meteoモックの降水確率(2026-08-14, 60%)が表形式で見える
+    await expect(page.getByText('60%').first()).toBeVisible();
 
     await advanceMode();
     // 4回目のクリックでdefaultに戻る
