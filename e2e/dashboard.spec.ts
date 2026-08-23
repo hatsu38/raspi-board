@@ -43,7 +43,7 @@ test.describe('デフォルト画面', () => {
 });
 
 test.describe('モード切り替え', () => {
-  test('クリックのたびにdefault→clock→garbage→weather→defaultの順で巡回する', async ({ page }) => {
+  test('クリックのたびにdefault→weather→clock→garbage→defaultの順で巡回する', async ({ page }) => {
     await page.goto('/');
 
     // default: 服装指数カードの見出しが見える
@@ -51,6 +51,15 @@ test.describe('モード切り替え', () => {
 
     // クリックで画面全体のモードを進める(page.tsxのルート要素のonClickに依存)
     const advanceMode = () => page.mouse.click(960, 540);
+
+    await advanceMode();
+    // weather: 服装指数・ゴミ出しの見出しは消え、3日分の時間帯別天気が全画面表示される
+    await expect(page.getByText('きょうの服装')).not.toBeVisible();
+    await expect(page.getByText('あすのゴミ')).not.toBeVisible();
+    await expect(page.getByText('今日', { exact: true })).toBeVisible();
+    await expect(page.getByText('明後日', { exact: true })).toBeVisible();
+    // Open-Meteoモックの降水確率(2026-08-14, 60%)が表形式で見える
+    await expect(page.getByText('60%').first()).toBeVisible();
 
     await advanceMode();
     // clock: 服装指数・ゴミ出しの見出しはどちらも消え、時計だけの全画面表示になる
@@ -62,15 +71,6 @@ test.describe('モード切り替え', () => {
     // garbage: ゴミ出しの見出しだけが全画面表示される
     await expect(page.getByText('あすのゴミ')).toBeVisible();
     await expect(page.getByText('きょうの服装')).not.toBeVisible();
-
-    await advanceMode();
-    // weather: 服装指数・ゴミ出しの見出しは消え、3日分の時間帯別天気が全画面表示される
-    await expect(page.getByText('きょうの服装')).not.toBeVisible();
-    await expect(page.getByText('あすのゴミ')).not.toBeVisible();
-    await expect(page.getByText('今日', { exact: true })).toBeVisible();
-    await expect(page.getByText('明後日', { exact: true })).toBeVisible();
-    // Open-Meteoモックの降水確率(2026-08-14, 60%)が表形式で見える
-    await expect(page.getByText('60%').first()).toBeVisible();
 
     await advanceMode();
     // 4回目のクリックでdefaultに戻る

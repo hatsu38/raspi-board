@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 
-export const DISPLAY_MODES = ['default', 'clock', 'garbage', 'weather'] as const;
+export const DISPLAY_MODES = ['default', 'weather', 'clock', 'garbage'] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number];
 
 type DisplayModeContextType = {

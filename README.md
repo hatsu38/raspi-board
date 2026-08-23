@@ -14,7 +14,7 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 画面のどこかをクリック / タップするたびに、以下の順で表示が切り替わる。タッチディスプレイで操作することを想定した作り。
 
 ```
-default（全部表示） → clock → garbage → weather → default …
+default（全部表示） → weather → clock → garbage → default …
 ```
 
 `default` 以外は該当カードを 1 枚だけ拡大して全画面表示する。`clock` `garbage` は離れた場所から見るときに使う。`weather` は 3 時間おきの時間帯別詳細を表示するため、近づいて見る想定。
