@@ -59,7 +59,7 @@ export function TemperatureGraph({ temperatures }: TemperatureGraphProps) {
       {points.map((p, index) => (
         <span
           key={index}
-          className="fs-2xs absolute font-bold text-hot"
+          className="fs-sm absolute font-bold text-hot"
           style={{
             left: `${p.xPercent}%`,
             top: `max(${p.yPercent}%, ${MIN_LABEL_TOP})`,

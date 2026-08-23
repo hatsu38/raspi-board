@@ -46,7 +46,7 @@ const DayHourlyTable = ({ date, dayLabel, slots, isToday }: DayHourlyTableProps)
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0">
         {slots.map((slot) => (
-          <span key={slot.time} className="fs-2xs flex-1 text-center text-ink-faint">
+          <span key={slot.time} className="fs-xs flex-1 text-center text-ink-faint">
             {formatHour(slot.time)}
           </span>
         ))}
@@ -68,7 +68,7 @@ const DayHourlyTable = ({ date, dayLabel, slots, isToday }: DayHourlyTableProps)
       </div>
       <div className="flex shrink-0">
         {slots.map((slot) => (
-          <span key={slot.time} className="fs-2xs flex-1 text-center font-bold text-cold">
+          <span key={slot.time} className="fs-xs flex-1 text-center font-bold text-cold">
             {Math.round(slot.precipitationProbability)}%
           </span>
         ))}
