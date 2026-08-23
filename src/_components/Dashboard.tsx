@@ -3,6 +3,7 @@
 import { CSSProperties } from "react";
 import { Dayjs } from "dayjs";
 import { Weather } from "./Weather";
+import { WeatherDetail } from "./WeatherDetail";
 import { Clock } from "./Clock";
 import { Garbage } from "./Garbage";
 import { useWeather } from "../_contexts/WeatherContext";
@@ -93,7 +94,7 @@ export function Dashboard({ dates }: DashboardProps) {
       case 'weather':
         return (
           <div className="h-full p-[3vh]" style={fullscreenStyle(1.3)}>
-            <Weather dates={dates} />
+            <WeatherDetail dates={dates} />
           </div>
         );
       default:
