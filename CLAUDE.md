@@ -47,18 +47,19 @@ Playwright のブラウザが未インストールの場合は `pnpm exec playwr
 
 全コンポーネントが `'use client'`。サーバーコンポーネント/Route Handler/API Routes は一切使っていない。データ取得はすべてブラウザ側の `fetch` で行う。
 
-`src/app/page.tsx` が 3 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
+`src/app/page.tsx` が 4 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
 
 ```
-TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Dashboard
+TimeProvider → WeatherProvider → HourlyWeatherProvider → DisplayModeProvider → MainContent → Dashboard
 ```
 
-### 3 つの Context (`src/_contexts/`)
+### 4 つの Context (`src/_contexts/`)
 
 | Context | 責務 |
 | --- | --- |
 | `TimeContext` | 1 秒ごとに `dayjs()` を更新して配信。時計表示と全日付計算の起点 |
 | `WeatherContext` | 5 分ごとに天気 API を fetch。取得と同時に服装指数も計算して保持 |
+| `HourlyWeatherContext` | 5 分ごとに Open-Meteo を fetch し、`weather`モード(`WeatherDetail.tsx`)用の時間帯別データを保持 |
 | `DisplayModeContext` | 表示モードを `default → clock → garbage → weather` の順に巡回 |
 
 モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
@@ -81,7 +82,9 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 
 ### データソース
 
-天気は `https://weather.tsukumijima.net/api/forecast/city/120010`（千葉市、API キー不要）。都市を変える場合は `WeatherContext.tsx` の `CHIBA_CITY_ID` を変更する。
+天気(今日・明日・明後日の概要、defaultモード下段と`Weather.tsx`)は `https://weather.tsukumijima.net/api/forecast/city/120010`（千葉市、API キー不要）。都市を変える場合は `WeatherContext.tsx` の `CHIBA_CITY_ID` を変更する。
+
+`weather`モード(全画面、`WeatherDetail.tsx`)の時間帯別データは [Open-Meteo](https://api.open-meteo.com/v1/forecast) から取得する。こちらもAPIキー不要だが、都市の指定が緯度経度(`HourlyWeatherContext.tsx` の `CHIBA_LATITUDE` / `CHIBA_LONGITUDE`)である点がtsukumijimaの `CHIBA_CITY_ID` と異なる。都市を変える場合は両方の変更が必要。
 
 ### 服装指数 (`src/_utils/clothingScore.ts`)
 
