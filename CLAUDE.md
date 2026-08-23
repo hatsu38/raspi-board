@@ -36,7 +36,7 @@ UI の動作確認には Playwright MCP(ルートの `.mcp.json` で定義)を�
 
 1. `browser_navigate` で `http://localhost:3000` を開く
 2. `browser_resize` で 1920x1080 にして 7 インチディスプレイ相当の表示を確認する
-3. クリックで 4 モード(default → clock → garbage → weather)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
+3. クリックで 4 モード(default → weather → clock → garbage)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
 4. `browser_console_messages` でコンソールエラーがないことを確認する
 
 Playwright のブラウザが未インストールの場合は `pnpm exec playwright install chromium` を先に実行する。
@@ -59,7 +59,7 @@ TimeProvider → WeatherProvider → DisplayModeProvider → MainContent → Das
 | --- | --- |
 | `TimeContext` | 1 秒ごとに `dayjs()` を更新して配信。時計表示と全日付計算の起点 |
 | `WeatherContext` | 5 分ごとに天気 API を fetch。取得と同時に服装指数も計算して保持 |
-| `DisplayModeContext` | 表示モードを `default → clock → garbage → weather` の順に巡回 |
+| `DisplayModeContext` | 表示モードを `default → weather → clock → garbage` の順に巡回 |
 
 モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
 
