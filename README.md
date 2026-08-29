@@ -14,10 +14,10 @@ Raspberry Pi に接続した小型ディスプレイで常時表示すること�
 画面のどこかをクリック / タップするたびに、以下の順で表示が切り替わる。タッチディスプレイで操作することを想定した作り。
 
 ```
-default（全部表示） → weather → clock → garbage → default …
+default（全部表示） → weather → schedule → clock → garbage → default …
 ```
 
-`default` 以外は該当カードを 1 枚だけ拡大して全画面表示する。`clock` `garbage` は離れた場所から見るときに使う。`weather` は 3 時間おきの時間帯別詳細を表示するため、近づいて見る想定。
+`default` 以外は該当カードを 1 枚だけ拡大して全画面表示する。`clock` `garbage` は離れた場所から見るときに使う。`weather` は 3 時間おきの時間帯別詳細を、`schedule` は TimeTree の月間予定一覧を表示するため、どちらも近づいて見る想定。
 
 ## 表示ハードウェア
 
@@ -70,6 +70,20 @@ pnpm run dev
 http://localhost:3000 を開く。
 
 天気の取得には [天気予報 API（livedoor 天気互換）](https://weather.tsukumijima.net/)（今日・明日・明後日の概要）と [Open-Meteo](https://api.open-meteo.com/)（`weather` モードの時間帯別詳細）の 2 つを使っており、どちらも **API キーは不要**。環境変数の設定なしでそのまま動作する。
+
+## TimeTree予定表示とアクセス制限
+
+TimeTreeの予定を表示するには、以下の環境変数が必要(`.env` に追加する)。
+
+| 変数名 | 内容 |
+| --- | --- |
+| `TIMETREE_EMAIL` | TimeTreeのログインメールアドレス |
+| `TIMETREE_PASSWORD` | TimeTreeのログインパスワード |
+| `BOARD_ACCESS_TOKEN` | ボード全体へのアクセスを保護するための秘密のトークン。未設定の場合は認証なしで誰でもアクセスできる |
+
+TimeTreeの予定は[公式APIが2023年12月に終了しているため](https://timetreeapp.com/newsroom)、非公式のWeb APIを直接叩いて取得している(`src/_libs/timetree/`)。TimeTree側の仕様変更で予告なく動かなくなる可能性がある。
+
+`BOARD_ACCESS_TOKEN` を設定した場合、`https://<デプロイ先>/?key=<トークンの値>` でアクセスした端末だけがCookie経由で以後も閲覧できるようになる(`src/proxy.ts`)。Raspberry Piのキオスクブラウザの起動URLには、常にこの `?key=` 付きのURLを設定しておくこと。こうしておけば、Piやブラウザを再起動してCookieが消えても、起動のたびに自動的に再認証される。
 
 ## コマンド
 
