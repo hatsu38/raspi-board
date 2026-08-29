@@ -4,6 +4,7 @@ import { CSSProperties } from "react";
 import { Dayjs } from "dayjs";
 import { Weather } from "./Weather";
 import { WeatherDetail } from "./WeatherDetail";
+import { Schedule } from "./Schedule";
 import { Clock } from "./Clock";
 import { Garbage } from "./Garbage";
 import { UpcomingSchedule } from "./UpcomingSchedule";
@@ -96,6 +97,12 @@ export function Dashboard({ dates }: DashboardProps) {
         return (
           <div className="h-full p-[3vh]" style={fullscreenStyle(1.3)}>
             <WeatherDetail dates={dates} />
+          </div>
+        );
+      case 'schedule':
+        return (
+          <div className="h-full p-[3vh]" style={fullscreenStyle(1)}>
+            <Schedule today={dates[0]} />
           </div>
         );
       default:
