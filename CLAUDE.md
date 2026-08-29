@@ -36,7 +36,7 @@ UI の動作確認には Playwright MCP(ルートの `.mcp.json` で定義)を�
 
 1. `browser_navigate` で `http://localhost:3000` を開く
 2. `browser_resize` で 1920x1080 にして 7 インチディスプレイ相当の表示を確認する
-3. クリックで 4 モード(default → weather → clock → garbage)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
+3. クリックで 5 モード(default → weather → schedule → clock → garbage)を巡回し、`browser_take_screenshot` で各モードのレイアウト崩れがないか確認する
 4. `browser_console_messages` でコンソールエラーがないことを確認する
 
 Playwright のブラウザが未インストールの場合は `pnpm exec playwright install chromium` を先に実行する。
@@ -45,22 +45,23 @@ Playwright のブラウザが未インストールの場合は `pnpm exec playwr
 
 ### レンダリング構成
 
-全コンポーネントが `'use client'`。サーバーコンポーネント/Route Handler/API Routes は一切使っていない。データ取得はすべてブラウザ側の `fetch` で行う。
+`src/app/api/timetree/route.ts` を唯一の例外として、全コンポーネントは `'use client'` でデータ取得もすべてブラウザ側の `fetch` で行う。この Route Handler は TimeTree 非公式 API へのログイン処理(`TIMETREE_EMAIL`/`TIMETREE_PASSWORD`)をサーバー側だけで完結させ、認証情報がクライアントバンドルに含まれないようにするためのプロキシで、ブラウザ側は `/api/timetree` を叩くだけでよい。また `src/proxy.ts`(Next.js 16 の Proxy 規約、旧 `middleware.ts`)がページ・API Route を含むアプリ全体を `BOARD_ACCESS_TOKEN` で保護している。
 
-`src/app/page.tsx` が 4 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
+`src/app/page.tsx` が 5 つの Provider をネストし、その内側の `Dashboard` が表示を組み立てる:
 
 ```
-TimeProvider → WeatherProvider → HourlyWeatherProvider → DisplayModeProvider → MainContent → Dashboard
+TimeProvider → WeatherProvider → HourlyWeatherProvider → ScheduleProvider → DisplayModeProvider → MainContent → Dashboard
 ```
 
-### 4 つの Context (`src/_contexts/`)
+### 5 つの Context (`src/_contexts/`)
 
 | Context | 責務 |
 | --- | --- |
 | `TimeContext` | 1 秒ごとに `dayjs()` を更新して配信。時計表示と全日付計算の起点 |
 | `WeatherContext` | 5 分ごとに天気 API を fetch。取得と同時に服装指数も計算して保持 |
 | `HourlyWeatherContext` | 5 分ごとに Open-Meteo を fetch し、`weather`モード(`WeatherDetail.tsx`)用の時間帯別データを保持 |
-| `DisplayModeContext` | 表示モードを `default → weather → clock → garbage` の順に巡回 |
+| `ScheduleContext` | 5 分ごとに `/api/timetree` から TimeTree の予定を fetch し、`ScheduleEvent[]` を保持 |
+| `DisplayModeContext` | 表示モードを `default → weather → schedule → clock → garbage` の順に巡回 |
 
 モード切り替えは画面全体の `onClick`（`page.tsx` のルート div）に紐づいている。タッチディスプレイで画面のどこを触ってもモードが進む設計。`default` 以外はカード 1 枚を全画面表示し、拡大は CSS 変数 `--scale` で行う（`Dashboard.tsx` の `fullscreenStyle`）。現在のモードは画面下部のドットインジケーターで示す。
 
