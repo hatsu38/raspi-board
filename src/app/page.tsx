@@ -3,6 +3,7 @@
 import { TimeProvider } from "../_contexts/TimeContext";
 import { WeatherProvider } from "../_contexts/WeatherContext";
 import { HourlyWeatherProvider } from "../_contexts/HourlyWeatherContext";
+import { ScheduleProvider } from "../_contexts/ScheduleContext";
 import { DisplayModeProvider } from "../_contexts/DisplayModeContext";
 import { useTime } from "../_contexts/TimeContext";
 import { useDisplayMode } from "../_contexts/DisplayModeContext";
@@ -44,9 +45,11 @@ export default function Home() {
     <TimeProvider>
       <WeatherProvider>
         <HourlyWeatherProvider>
-          <DisplayModeProvider>
-            <MainContent />
-          </DisplayModeProvider>
+          <ScheduleProvider>
+            <DisplayModeProvider>
+              <MainContent />
+            </DisplayModeProvider>
+          </ScheduleProvider>
         </HourlyWeatherProvider>
       </WeatherProvider>
     </TimeProvider>
