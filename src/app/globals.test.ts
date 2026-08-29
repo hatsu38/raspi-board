@@ -143,6 +143,8 @@ const DISTANCE_READABLE = [
   { className: 'fs-clock', script: 'digit', usage: '時刻' },
   { className: 'fs-today-telop', script: 'kanji', usage: '今日の天気' },
   { className: 'fs-today-temp', script: 'digit', usage: '今日の気温' },
+  { className: 'fs-schedule-title', script: 'kanji', usage: '直近予定のタイトル' },
+  { className: 'fs-schedule-time', script: 'digit', usage: '直近予定の時刻' },
 ] as const;
 
 function readFontSizes(): Record<string, number> {

@@ -233,3 +233,15 @@ img {
 .fs-clock {
   font-size: calc(12.5vh * var(--scale, 1));
 }
+
+/*
+ * defaultモードの直近予定欄用。1mから一瞬で読める基準(globals.test.ts の
+ * DISTANCE_READABLE)を満たすため、他の遠距離層と同じ考え方でサイズを決めている。
+ * タイトルは漢字混じりのため6.5vh、時刻は数字のみで実インクが小さいため8vh。
+ */
+.fs-schedule-title {
+  font-size: calc(6.5vh * var(--scale, 1));
+}
+.fs-schedule-time {
+  font-size: calc(8vh * var(--scale, 1));
+}
