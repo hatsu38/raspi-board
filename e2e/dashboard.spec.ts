@@ -5,10 +5,12 @@ import {
   OPEN_METEO_API_URL_PATTERN,
   OPEN_METEO_MOCK,
 } from './fixtures/weather-mock';
+import { TIMETREE_API_URL_PATTERN, TIMETREE_MOCK } from './fixtures/timetree-mock';
 
 test.beforeEach(async ({ page }) => {
   await page.route(WEATHER_API_URL_PATTERN, (route) => route.fulfill({ json: WEATHER_MOCK }));
   await page.route(OPEN_METEO_API_URL_PATTERN, (route) => route.fulfill({ json: OPEN_METEO_MOCK }));
+  await page.route(TIMETREE_API_URL_PATTERN, (route) => route.fulfill({ json: TIMETREE_MOCK }));
 
   // TimeContextはマウント直後にnew Date()で時刻を確定するため、
   // goto()より前に固定時刻をセットしておく必要がある。
@@ -34,16 +36,18 @@ test.describe('デフォルト画面', () => {
     await expect(page.getByText('あすのゴミ')).toBeVisible();
     await expect(page.getByText('金曜日・第2・4週')).toBeVisible();
 
-    // 3日分の天気予報(今日/明日/明後日)
+    // 2日分の天気予報(今日/明日)。明後日のカードはdefaultモードでは表示しない
     await expect(page.getByText('今日', { exact: true })).toBeVisible();
     await expect(page.getByText('明日', { exact: true })).toBeVisible();
-    await expect(page.getByText('明後日', { exact: true })).toBeVisible();
+    await expect(page.getByText('明後日', { exact: true })).not.toBeVisible();
     await expect(page.getByText('曇時々雨')).toBeVisible();
   });
 });
 
 test.describe('モード切り替え', () => {
-  test('クリックのたびにdefault→weather→clock→garbage→defaultの順で巡回する', async ({ page }) => {
+  test('クリックのたびにdefault→weather→schedule→clock→garbage→defaultの順で巡回する', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     // default: 服装指数カードの見出しが見える
@@ -62,6 +66,11 @@ test.describe('モード切り替え', () => {
     await expect(page.getByText('60%').first()).toBeVisible();
 
     await advanceMode();
+    // schedule: 月間カレンダー(よてい)の見出しが見え、weatherモード特有の降水確率表示は消える
+    await expect(page.getByText('よてい')).toBeVisible();
+    await expect(page.getByText('60%')).not.toBeVisible();
+
+    await advanceMode();
     // clock: 服装指数・ゴミ出しの見出しはどちらも消え、時計だけの全画面表示になる
     await expect(page.getByText('きょうの服装')).not.toBeVisible();
     await expect(page.getByText('あすのゴミ')).not.toBeVisible();
@@ -73,7 +82,7 @@ test.describe('モード切り替え', () => {
     await expect(page.getByText('きょうの服装')).not.toBeVisible();
 
     await advanceMode();
-    // 4回目のクリックでdefaultに戻る
+    // 5回目のクリックでdefaultに戻る
     await expect(page.getByText('きょうの服装')).toBeVisible();
   });
 });
