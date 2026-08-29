@@ -19,7 +19,7 @@ type WeatherCardProps = {
   isToday: boolean;
 };
 
-const DAY_LABELS = ['今日', '明日', '明後日'];
+const DAY_LABELS = ['今日', '明日'];
 
 const RAIN_SLOTS = [
   { key: 'T00_06', label: '0-6' },
@@ -199,8 +199,8 @@ export function Weather({ dates }: WeatherProps) {
 
   return (
     // 今日のカードだけ広くする。大きくした天気 telop と気温を折り返さずに収めるため
-    <div className="grid h-full min-h-0 grid-cols-[1.5fr_1fr_1fr] gap-[2.5vh]">
-      {weather.forecasts.slice(0, 3).map((forecast, index) => (
+    <div className="grid h-full min-h-0 grid-cols-[1.5fr_1fr] gap-[2.5vh]">
+      {weather.forecasts.slice(0, 2).map((forecast, index) => (
         <WeatherCard
           key={forecast.date}
           forecast={forecast}

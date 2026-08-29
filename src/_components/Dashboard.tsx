@@ -6,6 +6,7 @@ import { Weather } from "./Weather";
 import { WeatherDetail } from "./WeatherDetail";
 import { Clock } from "./Clock";
 import { Garbage } from "./Garbage";
+import { UpcomingSchedule } from "./UpcomingSchedule";
 import { useWeather } from "../_contexts/WeatherContext";
 import { useDisplayMode, DISPLAY_MODES } from "../_contexts/DisplayModeContext";
 import Image from "next/image";
@@ -100,7 +101,8 @@ export function Dashboard({ dates }: DashboardProps) {
       default:
         return (
           /* 下段が厚いのは、今日の天気と気温を 1m 先から読める大きさで置くため。
-             減った上段の分は服装・ゴミのイラストが縮んで吸収する(時計は影響を受けない) */
+             減った上段の分は服装・ゴミのイラストが縮んで吸収する(時計は影響を受けない)。
+             下段は「今日・明日の天気」+「直近の予定」の2列構成にしている */
           <div className="grid h-full grid-rows-[5fr_8fr] gap-[2.5vh] p-[2.5vh] pb-[3.5vh]">
             <div className="grid min-h-0 grid-cols-[1.2fr_1fr_1fr] gap-[2.5vh]">
               <section className="panel flex items-center justify-center">
@@ -111,8 +113,9 @@ export function Dashboard({ dates }: DashboardProps) {
                 <Garbage date={dates[0]} />
               </section>
             </div>
-            <div className="min-h-0">
+            <div className="grid min-h-0 grid-cols-[1.7fr_1fr] gap-[2.5vh]">
               <Weather dates={dates} />
+              <UpcomingSchedule now={dates[0]} />
             </div>
           </div>
         );
