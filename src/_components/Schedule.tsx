@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Dayjs } from 'dayjs';
 import { useSchedule } from '../_contexts/ScheduleContext';
 import { buildMonthGrid } from '../_utils/monthGrid';
@@ -13,6 +14,16 @@ type ScheduleProps = {
 
 export function Schedule({ today }: ScheduleProps) {
   const { events, loading, error } = useSchedule();
+
+  // todayは親(TimeContext)が1秒ごとに生成する新しいDayjsインスタンスのため、
+  // 依存配列にそのまま渡すと日付が変わっていなくても毎秒再計算されてしまう。
+  // 日付文字列をキーにすることで、暦日が変わった時とeventsが更新された時だけ再計算する。
+  const todayDateKey = today.format('YYYY-MM-DD');
+  const cells = useMemo(
+    () => buildMonthGrid(today, events ?? [], today),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 上記の理由によりtoday自体ではなく日付文字列(todayDateKey)を依存値にしている
+    [events, todayDateKey]
+  );
 
   if (!events) {
     if (loading) {
@@ -32,7 +43,6 @@ export function Schedule({ today }: ScheduleProps) {
     return null;
   }
 
-  const cells = buildMonthGrid(today, events, today);
   const rowCount = cells.length / 7;
 
   return (

@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Dayjs } from 'dayjs';
 import { useSchedule } from '../_contexts/ScheduleContext';
 import { pickUpcomingEvents } from '../_utils/upcomingSchedule';
@@ -12,6 +13,16 @@ type UpcomingScheduleProps = {
 
 export function UpcomingSchedule({ now }: UpcomingScheduleProps) {
   const { events, loading, error } = useSchedule();
+
+  // nowは親(TimeContext)が1秒ごとに生成する新しいDayjsインスタンスのため、
+  // 依存配列にそのまま渡すと日付が変わっていなくても毎秒再計算されてしまう。
+  // 日付文字列をキーにすることで、暦日が変わった時とeventsが更新された時だけ再計算する。
+  const nowDateKey = now.format('YYYY-MM-DD');
+  const items = useMemo(
+    () => pickUpcomingEvents(events ?? [], now, UPCOMING_COUNT),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 上記の理由によりnow自体ではなく日付文字列(nowDateKey)を依存値にしている
+    [events, nowDateKey]
+  );
 
   if (!events) {
     if (loading) {
@@ -31,8 +42,6 @@ export function UpcomingSchedule({ now }: UpcomingScheduleProps) {
     return null;
   }
 
-  const items = pickUpcomingEvents(events, now, UPCOMING_COUNT);
-
   return (
     <section className="panel flex min-h-0 flex-col p-[2vh]">
       <h3 className="card-title fs-sm shrink-0 self-center font-bold">よてい</h3>
@@ -44,9 +53,9 @@ export function UpcomingSchedule({ now }: UpcomingScheduleProps) {
         <ul className="flex min-h-0 flex-1 flex-col justify-center gap-[1vh] overflow-hidden">
           {items.map((item) => (
             <li key={item.id} className="flex items-baseline gap-[1.2vh]">
-              <span className="fs-xs shrink-0 text-ink-faint">{item.dateLabel}</span>
+              <span className="fs-sm shrink-0 text-ink-faint">{item.dateLabel}</span>
               {item.timeLabel && (
-                <span className="fs-schedule-time shrink-0 font-bold text-accent-ink">
+                <span className="fs-schedule-time shrink-0 font-bold leading-none text-accent-ink">
                   {item.timeLabel}
                 </span>
               )}
