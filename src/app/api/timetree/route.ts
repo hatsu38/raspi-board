@@ -18,7 +18,7 @@ const DISPLAY_RANGE_MONTHS = 1;
 // 1ヶ月分程度)のと引き換えに、月間グリッドが常に正しく描画されることを優先する。
 //
 // 上限はendOf('day')で当日の終わりまでを含める。単なる「1ヶ月後の同時刻」
-// (バレな瞬間)のままだと、リクエストが日中に実行された場合に「1ヶ月後の
+// という瞬間のままだと、リクエストが日中に実行された場合に「1ヶ月後の
 // その日の、リクエスト時刻より後」の予定が範囲外として落ちてしまうため。
 function filterEventsWithinDisplayRange(events: ScheduleEvent[]): ScheduleEvent[] {
   const rangeStart = dayjs().startOf('month');
