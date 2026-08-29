@@ -50,4 +50,27 @@ describe('buildMonthGrid', () => {
     const otherCell = cells.find((cell) => cell.date.format('YYYY-MM-DD') === '2026-08-05');
     expect(otherCell?.events).toEqual([]);
   });
+
+  it('複数日にまたがる終日予定は、開始日から終了日前日までの全セルに紐づく', () => {
+    // 終日予定はendAtが最終日翌日の0時になる(TimeTreeのall_dayイベントの一般的な表現)ため、
+    // 8/4 00:00 〜 8/7 00:00 は 8/4・8/5・8/6 の3日間にまたがる予定を表す
+    const events: ScheduleEvent[] = [
+      {
+        id: 'trip',
+        title: '旅行',
+        startAt: '2026-08-04T00:00:00+09:00',
+        endAt: '2026-08-07T00:00:00+09:00',
+        allDay: true,
+      },
+    ];
+
+    const cells = buildMonthGrid(dayjs('2026-08-15'), events);
+    const eventIdsOn = (dateStr: string) =>
+      cells.find((cell) => cell.date.format('YYYY-MM-DD') === dateStr)?.events.map((e) => e.id);
+
+    expect(eventIdsOn('2026-08-04')).toEqual(['trip']);
+    expect(eventIdsOn('2026-08-05')).toEqual(['trip']);
+    expect(eventIdsOn('2026-08-06')).toEqual(['trip']);
+    expect(eventIdsOn('2026-08-07')).toEqual([]);
+  });
 });

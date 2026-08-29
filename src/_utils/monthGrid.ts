@@ -14,6 +14,21 @@ function mondayOffset(date: Dayjs): number {
   return (date.day() + 6) % 7;
 }
 
+// 予定がそのセル(1日)に属するかを、予定の半開区間[startAt, endAt)とセルの
+// 半開区間[dayStart, dayEnd)が重なるかどうかで判定する。
+// 終日予定はendAtが最終日翌日の0時になっている(TimeTreeのall_dayイベントの一般的な表現)ため、
+// 開始日だけをdayjs().isSame(cursor, 'day')で比較すると、複数日にまたがる予定が
+// 初日以外のセルに表示されなくなる。区間の重なりで判定することで、
+// 時刻指定の予定(同日内に収まる)・複数日にまたがる終日予定のどちらも
+// 同じロジックで正しく扱える。
+function eventOccursOnDay(event: ScheduleEvent, day: Dayjs): boolean {
+  const dayStart = day.startOf('day');
+  const dayEnd = dayStart.add(1, 'day');
+  const eventStart = dayjs(event.startAt);
+  const eventEnd = dayjs(event.endAt);
+  return eventStart.isBefore(dayEnd) && eventEnd.isAfter(dayStart);
+}
+
 export function buildMonthGrid(
   baseDate: Dayjs,
   events: ScheduleEvent[],
@@ -31,7 +46,7 @@ export function buildMonthGrid(
       date: cursor,
       isCurrentMonth: cursor.isSame(baseDate, 'month'),
       isToday: cursor.isSame(today, 'day'),
-      events: events.filter((event) => dayjs(event.startAt).isSame(cursor, 'day')),
+      events: events.filter((event) => eventOccursOnDay(event, cursor)),
     });
     cursor = cursor.add(1, 'day');
   }
