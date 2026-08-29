@@ -79,7 +79,9 @@ TimeTreeの予定を表示するには、以下の環境変数が必要(`.env` �
 | --- | --- |
 | `TIMETREE_EMAIL` | TimeTreeのログインメールアドレス |
 | `TIMETREE_PASSWORD` | TimeTreeのログインパスワード |
-| `BOARD_ACCESS_TOKEN` | ボード全体へのアクセスを保護するための秘密のトークン。未設定の場合は認証なしで誰でもアクセスできる |
+| `BOARD_ACCESS_TOKEN` | ボード全体へのアクセスを保護するための秘密のトークン。ローカル開発では未設定でも認証なしで動作する(利便性のため)。一方、本番(`NODE_ENV=production`、Vercelへのデプロイがこれにあたる)で未設定の場合は、個人のカレンダー情報が無警告で公開されてしまわないよう、意図的に全リクエストを401で拒否する(フェイルクローズ、`src/proxy.ts`) |
+
+`SKIP_BOARD_AUTH_FAILCLOSE` は、上記フェイルクローズ判定だけを無効化する内部的な抜け道で、E2Eテスト設定(`playwright.config.ts`)が本番ビルドを実トークンなしで起動するためだけに使っている。`.env` や実際のVercelのデプロイ環境変数には**絶対に設定しないこと**(設定するとフェイルクローズが無効化され、この機能の目的そのものが失われる)。
 
 TimeTreeの予定は[公式APIが2023年12月に終了しているため](https://timetreeapp.com/newsroom)、非公式のWeb APIを直接叩いて取得している(`src/_libs/timetree/`)。TimeTree側の仕様変更で予告なく動かなくなる可能性がある。
 
