@@ -20,9 +20,21 @@ const DISPLAY_RANGE_MONTHS = 1;
 // 上限はendOf('day')で当日の終わりまでを含める。単なる「1ヶ月後の同時刻」
 // という瞬間のままだと、リクエストが日中に実行された場合に「1ヶ月後の
 // その日の、リクエスト時刻より後」の予定が範囲外として落ちてしまうため。
+//
+// dayjs()は明示的なタイムゾーン指定がない場合、サーバープロセスの環境依存の
+// タイムゾーンで「今」を解釈する。Vercelのサーバーレス関数はUTCで動くため、
+// 何もしなければ「今月」の判定がJSTから最大9時間ずれる
+// (JSTで月初00:00〜09:00の間は、UTC暦ではまだ前月末日のため)。
+// これにより、月初の09:00 JSTより前は「今月」が前月のまま扱われ、
+// 前月の予定が範囲に残ってしまったり、逆に上限(1ヶ月後の日末)が
+// JSTの日末より最大9時間早く閉じてしまい、本来含まれるはずの予定が
+// 落ちてしまったりする。.tz('Asia/Tokyo')で「今」をJSTの壁時計時刻として
+// 明示的に固定することで、サーバーの実行環境タイムゾーンに関係なく
+// 正しい月境界を計算する。
 function filterEventsWithinDisplayRange(events: ScheduleEvent[]): ScheduleEvent[] {
-  const rangeStart = dayjs().startOf('month');
-  const rangeEnd = dayjs().add(DISPLAY_RANGE_MONTHS, 'month').endOf('day');
+  const now = dayjs().tz('Asia/Tokyo');
+  const rangeStart = now.startOf('month');
+  const rangeEnd = now.add(DISPLAY_RANGE_MONTHS, 'month').endOf('day');
   return events.filter(
     (event) =>
       dayjs(event.endAt).isSameOrAfter(rangeStart) && dayjs(event.startAt).isSameOrBefore(rangeEnd)

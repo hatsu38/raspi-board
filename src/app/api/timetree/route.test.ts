@@ -104,6 +104,67 @@ describe('GET /api/timetree', () => {
     ]);
   });
 
+  it('月初00:00〜09:00 JSTの間でも月境界をJSTで正しく判定する(サーバーがUTCで動いても崩れないことの回帰テスト)', async () => {
+    // 不具合の内容: dayjs()はサーバープロセスの環境依存タイムゾーンで「今」を
+    // 解釈する。Vercel(UTC)で実行され、かつ「今」がJSTで月初00:00〜09:00
+    // (UTC暦ではまだ前月末日)のとき、.tz('Asia/Tokyo')を付けていないと
+    // 「今月」がUTC暦の前月のまま扱われてしまう。この1点のズレにより
+    // 2つの症状が同時に起きる(このテストは以下2つの予定でそれを検証する):
+    // 1. 下限(startOf('month'))が前月の月初まで戻ってしまい、本来は
+    //    範囲外のはずの前月(8月)の予定が結果に残る(誤って含まれる)
+    // 2. 上限(1ヶ月後の日末)がUTC暦で計算されるため、正しいJSTの上限
+    //    (10/1の日末)より最大9時間早く閉じてしまい、10/1午後のような
+    //    本来含まれるはずの予定が結果から落ちる(誤って除外される)
+    //
+    // 2026-09-01T03:00:00+09:00 は 2026-08-31T18:00:00Z。UTC暦では
+    // まだ8/31なので、タイムゾーンを固定していないサーバーは
+    // 「今月」を8月だと誤認する。
+    jest.setSystemTime(new Date('2026-09-01T03:00:00+09:00'));
+
+    (loginToTimeTree as jest.Mock).mockResolvedValue('session-id');
+    (fetchAllEvents as jest.Mock).mockResolvedValue([
+      {
+        id: 'stale-last-month',
+        // JSTでは明確に先月(8月)の予定。下限がUTC暦で8/1まで戻ってしまう
+        // 不具合があると、本来除外されるべきこの予定が誤って含まれてしまう
+        title: '先月(8月)の予定',
+        startAt: '2026-08-15T09:00:00+09:00',
+        endAt: '2026-08-15T10:00:00+09:00',
+        allDay: false,
+      },
+      {
+        id: 'early-morning-this-month',
+        // 「今」(9/1 03:00 JST)より後、9/1 09:00 JSTより前の予定。
+        // 下限がUTC暦で判定されても9/1 09:00 JSTより前の瞬間はUTC暦でも
+        // 8/31 のうちに収まるため、この予定自体は不具合の有無に関わらず
+        // 含まれる(下限側だけを見た誤った回帰テストにしないための対照)
+        title: '9/1早朝の予定',
+        startAt: '2026-09-01T06:00:00+09:00',
+        endAt: '2026-09-01T07:00:00+09:00',
+        allDay: false,
+      },
+      {
+        id: 'next-month-last-day-afternoon',
+        // 上限(1ヶ月後の日末)は正しくは10/1の日末(JST)まで含むはずだが、
+        // UTC暦で計算すると9/30の日末(UTC)までしか含まれない。
+        // この予定(10/1午後、JST)はその間に落ちるため、上限のズレがあると
+        // 誤って除外されてしまう
+        title: '10/1午後の予定',
+        startAt: '2026-10-01T12:00:00+09:00',
+        endAt: '2026-10-01T13:00:00+09:00',
+        allDay: false,
+      },
+    ]);
+
+    const response = await GET();
+    const body = await response.json();
+
+    expect(body.events.map((event: { id: string }) => event.id)).toEqual([
+      'early-morning-this-month',
+      'next-month-last-day-afternoon',
+    ]);
+  });
+
   it('環境変数が未設定の場合は500を返す', async () => {
     process.env = { ...originalEnv, TIMETREE_EMAIL: '', TIMETREE_PASSWORD: '' };
 

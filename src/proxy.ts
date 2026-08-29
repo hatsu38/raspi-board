@@ -19,8 +19,15 @@ const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // 1年
 // Next.js本番サーバーの他の挙動(最適化やビルド時のNODE_ENV参照箇所)に
 // 副作用が及ぶ可能性がある。そこで、この判定だけを専用フラグ
 // SKIP_BOARD_AUTH_FAILCLOSE で無効化できるようにし、E2E用の環境ではそちらを使う。
-const FAIL_CLOSED_PLACEHOLDER_TOKEN = '__unset_in_production__';
-
+//
+// フェイルクローズ時はisBoardRequestAuthorizedを一切呼ばずに401を返して
+// 即座に打ち切る。以前はダミーの期待値(プレースホルダー文字列)を
+// isBoardRequestAuthorizedに渡す実装だったが、isBoardRequestAuthorizedは
+// queryToken === expectedTokenも見るため、このリポジトリは公開なので
+// 誰でも読めるプレースホルダー文字列と全く同じ値を?keyクエリに指定すれば
+// 認証をすり抜けられてしまっていた(フェイルクローズの意味がなくなる致命的な穴)。
+// 比較そのものを発生させない早期returnにすることで、攻撃者が入力しうる
+// どんな文字列とも一致しようがない構造にしている。
 export function proxy(request: NextRequest) {
   const rawExpectedToken = process.env.BOARD_ACCESS_TOKEN;
   // isBoardRequestAuthorizedは空文字列も「未設定」として扱う(!expectedToken)ため、
@@ -28,20 +35,21 @@ export function proxy(request: NextRequest) {
   const isTokenUnset = !rawExpectedToken;
   const shouldFailClosed =
     process.env.NODE_ENV === 'production' && process.env.SKIP_BOARD_AUTH_FAILCLOSE !== 'true';
-  const effectiveExpectedToken =
-    isTokenUnset && shouldFailClosed ? FAIL_CLOSED_PLACEHOLDER_TOKEN : rawExpectedToken;
+
+  if (isTokenUnset && shouldFailClosed) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
 
   const cookieToken = request.cookies.get(COOKIE_NAME)?.value;
   const queryToken = request.nextUrl.searchParams.get('key');
 
-  if (!isBoardRequestAuthorized(cookieToken, queryToken, effectiveExpectedToken)) {
+  if (!isBoardRequestAuthorized(cookieToken, queryToken, rawExpectedToken)) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
   const response = NextResponse.next();
 
   // クエリのトークンで新規に認証できた場合だけ Cookie を発行し直す
-  // (プレースホルダーではなく実際に設定されたトークンと比較する)
   if (rawExpectedToken && queryToken === rawExpectedToken && cookieToken !== rawExpectedToken) {
     response.cookies.set(COOKIE_NAME, rawExpectedToken, {
       maxAge: COOKIE_MAX_AGE_SECONDS,
