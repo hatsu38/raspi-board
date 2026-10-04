@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { calculateClothingScore, getClothingDescription } from "../_utils/clothingScore";
 import { WeatherData, ClothingIndex, Forecast } from "../types/weather";
+import { fetchFresh } from "../_libs/fetchFresh";
 
 const CHIBA_CITY_ID = 120010;
 const WEATHER_API_BASE_URL = `https://weather.tsukumijima.net/api/forecast/city/${CHIBA_CITY_ID}`;
@@ -45,6 +46,8 @@ type WeatherContextType = {
   loading: boolean;
   error: string | null;
   clothingIndex: ClothingIndex | null;
+  // 最後に天気を取得できた時刻(ミリ秒)。一度も取得できていなければ null
+  lastUpdatedAt: number | null;
 };
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
@@ -54,13 +57,14 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clothingIndex, setClothingIndex] = useState<ClothingIndex | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const todayTempCacheRef = useRef<TodayTemperatureCache | null>(null);
 
   const fetchWeather = async () => {
     try {
       // loading の初期値は true。再取得時に true へ戻さないことで、
       // 5分ごとの更新中も前回のデータを表示し続けられる
-      const response = await fetch(WEATHER_API_BASE_URL);
+      const response = await fetchFresh(WEATHER_API_BASE_URL);
       if (!response.ok) {
         throw new Error('天気情報の取得に失敗しました');
       }
@@ -79,6 +83,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
         setClothingIndex(getClothingDescription(score));
       }
 
+      setLastUpdatedAt(Date.now());
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '予期せぬエラーが発生しました');
@@ -95,7 +100,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <WeatherContext.Provider value={{ weather, loading, error, clothingIndex }}>
+    <WeatherContext.Provider value={{ weather, loading, error, clothingIndex, lastUpdatedAt }}>
       {children}
     </WeatherContext.Provider>
   );

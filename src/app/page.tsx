@@ -1,7 +1,7 @@
 'use client';
 
 import { TimeProvider } from "../_contexts/TimeContext";
-import { WeatherProvider } from "../_contexts/WeatherContext";
+import { WeatherProvider, useWeather } from "../_contexts/WeatherContext";
 import { HourlyWeatherProvider } from "../_contexts/HourlyWeatherContext";
 import { DisplayModeProvider } from "../_contexts/DisplayModeContext";
 import { useTime } from "../_contexts/TimeContext";
@@ -9,6 +9,7 @@ import { useDisplayMode } from "../_contexts/DisplayModeContext";
 import { useMemo } from "react";
 import { Dashboard } from "../_components/Dashboard"
 import { useReloadOnNewDeploy } from "../_hooks/useReloadOnNewDeploy";
+import { useReloadWhenWeatherStale } from "../_hooks/useReloadWhenWeatherStale";
 import { useThemeByHour } from "../_hooks/useThemeByHour";
 
 function MainContent() {
@@ -17,6 +18,10 @@ function MainContent() {
 
   // 夜は配色を落とす。TimeProvider の内側でしか時刻が読めないためここで呼ぶ
   useThemeByHour();
+
+  // 長時間開いたまま天気が更新できなくなったら読み込み直す。WeatherProvider の内側で呼ぶ必要がある
+  const { lastUpdatedAt } = useWeather();
+  useReloadWhenWeatherStale(lastUpdatedAt);
 
   const dates = useMemo(() => {
     return [0, 1, 2].map(days => time.add(days, 'day'));
