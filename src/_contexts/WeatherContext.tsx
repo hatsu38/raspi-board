@@ -46,6 +46,8 @@ type WeatherContextType = {
   loading: boolean;
   error: string | null;
   clothingIndex: ClothingIndex | null;
+  // 最後に天気を取得できた時刻(ミリ秒)。一度も取得できていなければ null
+  lastUpdatedAt: number | null;
 };
 
 const WeatherContext = createContext<WeatherContextType | undefined>(undefined);
@@ -55,6 +57,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [clothingIndex, setClothingIndex] = useState<ClothingIndex | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const todayTempCacheRef = useRef<TodayTemperatureCache | null>(null);
 
   const fetchWeather = async () => {
@@ -80,6 +83,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
         setClothingIndex(getClothingDescription(score));
       }
 
+      setLastUpdatedAt(Date.now());
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : '予期せぬエラーが発生しました');
@@ -96,7 +100,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <WeatherContext.Provider value={{ weather, loading, error, clothingIndex }}>
+    <WeatherContext.Provider value={{ weather, loading, error, clothingIndex, lastUpdatedAt }}>
       {children}
     </WeatherContext.Provider>
   );

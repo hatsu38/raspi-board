@@ -1,12 +1,15 @@
 'use client';
 
 import { useWeather } from "../_contexts/WeatherContext";
+import { useTime } from "../_contexts/TimeContext";
+import DayJs from "../_libs/dayjsJa";
 import Image from "next/image";
 import { Dayjs } from "dayjs";
 import type { Forecast } from "../types/weather";
 import { getGarbageTypes } from "./Garbage";
 import { WeatherIcon } from "./WeatherIcon";
 import { getWeatherIconKind } from "../_utils/weatherIcon";
+import { isWeatherStale, STALE_DISPLAY_THRESHOLD } from "../_utils/weatherFreshness";
 
 type WeatherProps = {
   dates: Dayjs[];
@@ -175,8 +178,26 @@ const WeatherCard = ({ forecast, date, dayLabel, isToday }: WeatherCardProps) =>
   );
 };
 
+/*
+ * 取得に失敗し続けても画面は前回のデータを表示し続けるため、そのままだと
+ * 古い予報だと気づけない。しばらく更新できていないときだけ最終更新時刻を出す。
+ */
+const StaleNotice = ({ lastUpdatedAt }: { lastUpdatedAt: number | null }) => {
+  const { time } = useTime();
+
+  if (lastUpdatedAt === null || !isWeatherStale(lastUpdatedAt, time.valueOf(), STALE_DISPLAY_THRESHOLD)) {
+    return null;
+  }
+
+  return (
+    <span className="fs-2xs absolute right-[1.5vh] top-[1.5vh] z-10 rounded-full bg-soft px-[1.2vh] py-[0.3vh] font-bold text-hot">
+      最終更新 {DayJs(lastUpdatedAt).format('H:mm')}
+    </span>
+  );
+};
+
 export function Weather({ dates }: WeatherProps) {
-  const { weather, loading, error } = useWeather();
+  const { weather, loading, error, lastUpdatedAt } = useWeather();
 
   // 定期再取得中は前回のデータを表示し続ける(スピナーやエラーで画面をチラつかせない)
   if (!weather) {
@@ -198,17 +219,20 @@ export function Weather({ dates }: WeatherProps) {
   }
 
   return (
-    // 今日のカードだけ広くする。大きくした天気 telop と気温を折り返さずに収めるため
-    <div className="grid h-full min-h-0 grid-cols-[1.5fr_1fr_1fr] gap-[2.5vh]">
-      {weather.forecasts.slice(0, 3).map((forecast, index) => (
-        <WeatherCard
-          key={forecast.date}
-          forecast={forecast}
-          date={dates[index]}
-          dayLabel={DAY_LABELS[index]}
-          isToday={index === 0}
-        />
-      ))}
+    <div className="relative h-full min-h-0">
+      {/* 今日のカードだけ広くする。大きくした天気 telop と気温を折り返さずに収めるため */}
+      <div className="grid h-full min-h-0 grid-cols-[1.5fr_1fr_1fr] gap-[2.5vh]">
+        {weather.forecasts.slice(0, 3).map((forecast, index) => (
+          <WeatherCard
+            key={forecast.date}
+            forecast={forecast}
+            date={dates[index]}
+            dayLabel={DAY_LABELS[index]}
+            isToday={index === 0}
+          />
+        ))}
+      </div>
+      <StaleNotice lastUpdatedAt={lastUpdatedAt} />
     </div>
   );
 }
