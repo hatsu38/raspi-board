@@ -74,6 +74,16 @@ TimeProvider → WeatherProvider → HourlyWeatherProvider → DisplayModeProvid
 
 リロードの副作用は `src/_libs/reloadPage.ts` に切り出してある。jsdom では `window.location` を差し替えられず、テストから `reload` をモックできないため。
 
+### 天気が止まったときの自動復旧 (`src/_hooks/useReloadWhenWeatherStale.ts`)
+
+長時間開いたままだと、天気が更新されないまま古い予報を出し続けることがあった（Pi 上の原因は未特定）。原因を問わず復旧できるよう、3 段構えにしている:
+
+1. 外部 API の取得は `src/_libs/fetchFresh.ts` 経由で行う。`cache: 'no-store'` と 30 秒のタイムアウトを付け、応答しないまま止まったリクエストを失敗として扱う
+2. `WeatherContext` は最後に取得できた時刻 `lastUpdatedAt` を持つ。15 分以上更新できていなければ、`Weather.tsx` が「最終更新 H:mm」を表示する
+3. 30 分以上更新できていなければ `useReloadWhenWeatherStale` がページをリロードする。オフライン中にリロードするとブラウザのエラーページに置き換わって自力で戻れなくなるため、`/version.json` が読めるとき（`src/_libs/fetchBuiltAt.ts`）だけリロードする
+
+しきい値は `src/_utils/weatherFreshness.ts` で管理する。天気 API だけが落ちている間は 30 分ごとにリロードを繰り返すが、表示はエラーメッセージになるだけで害はない。
+
 ### レイアウトとタイポグラフィ
 
 7 インチ 1920x1080 の横長ディスプレイにスクロールなしでフィットさせるため、文字サイズはすべて `vh` 基準の独自クラス（`globals.css` の `.fs-2xs`〜`.fs-clock`）で指定する。各クラスは `calc(NvH * var(--scale, 1))` の形で、全画面モードでは親要素の `--scale` を変えるだけで一括拡大できる。画像サイズなど個別の寸法も `h-[calc(8vh*var(--scale,1))]` のように同じ変数を参照する。Tailwind の `text-*` サイズクラスは使わない。
