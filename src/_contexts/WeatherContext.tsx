@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { calculateClothingScore, getClothingDescription } from "../_utils/clothingScore";
 import { WeatherData, ClothingIndex, Forecast } from "../types/weather";
+import { fetchFresh } from "../_libs/fetchFresh";
 
 const CHIBA_CITY_ID = 120010;
 const WEATHER_API_BASE_URL = `https://weather.tsukumijima.net/api/forecast/city/${CHIBA_CITY_ID}`;
@@ -60,7 +61,7 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
     try {
       // loading の初期値は true。再取得時に true へ戻さないことで、
       // 5分ごとの更新中も前回のデータを表示し続けられる
-      const response = await fetch(WEATHER_API_BASE_URL);
+      const response = await fetchFresh(WEATHER_API_BASE_URL);
       if (!response.ok) {
         throw new Error('天気情報の取得に失敗しました');
       }

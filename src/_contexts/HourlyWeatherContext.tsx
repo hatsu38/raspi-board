@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { HourlyForecast } from "../types/weather";
+import { fetchFresh } from "../_libs/fetchFresh";
 
 const CHIBA_LATITUDE = 35.6073;
 const CHIBA_LONGITUDE = 140.1063;
@@ -50,7 +51,7 @@ export function HourlyWeatherProvider({ children }: { children: ReactNode }) {
     try {
       // loading の初期値は true。再取得時に true へ戻さないことで、
       // 5分ごとの更新中も前回のデータを表示し続けられる
-      const response = await fetch(OPEN_METEO_API_BASE_URL);
+      const response = await fetchFresh(OPEN_METEO_API_BASE_URL);
       if (!response.ok) {
         throw new Error('時間帯別の天気情報の取得に失敗しました');
       }
